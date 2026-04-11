@@ -288,7 +288,8 @@
 
     <strong>📶 Works offline too.</strong> This app has been saved to your browser's cache automatically. It will load and work even with no cell signal. Just use your bookmark — no internet required after this first visit.<br><br>
 
-    <strong>🔄 Updates are automatic.</strong> When improvements are made, you don't need to download anything. Just come back to your bookmark and if an update is ready you'll see a notification at the top. Tap it once and you're on the latest version. You will never need to visit the source or click any files — your bookmark is all you need.
+    <strong>🔄 Updates are automatic.</strong> When improvements are made, you don't need to download anything. Just come back to your bookmark and if an update is ready you'll see a notification at the top. Tap it once and you're on the latest version. You can also tap <strong>Check for Updates</strong> at the bottom of the app anytime.<br><br>
+    Your app address: <strong>venomknights.github.io/tank-calc</strong>
   </div>
   <div class="bm-actions">
     <button class="bm-btn dismiss" onclick="dismissBanner()">Skip</button>
@@ -304,7 +305,6 @@
     <button class="bm-btn primary" onclick="applyUpdate()">Reload Now</button>
   </div>
 </div>
-
 <div class="header">
   <div class="eyebrow">Field Operations</div>
   <h1>Tank Transfer Calc</h1>
@@ -530,6 +530,20 @@
 </div>
 
 <button class="reset-btn" onclick="resetAll()">Clear All</button>
+
+<div style="margin-top:10px; width:100%; max-width:420px; display:flex; gap:8px;">
+  <a href="https://venomknights.github.io/tank-calc" 
+     style="
+       flex:1; display:block; padding:12px; border-radius:10px;
+       background:transparent; border:1px solid rgba(122,179,240,0.3);
+       color:var(--blue); font-size:11px; font-weight:700;
+       cursor:pointer; font-family:inherit; letter-spacing:1px;
+       text-transform:uppercase; text-align:center; text-decoration:none;
+     ">🔄 Check for Updates</a>
+</div>
+<div style="margin-top:8px; font-size:10px; color:var(--muted); text-align:center; max-width:420px;">
+  venomknights.github.io/tank-calc
+</div>
 
 <script>
   // ── SERVICE WORKER REGISTRATION ──

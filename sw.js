@@ -4,8 +4,8 @@
 // ─────────────────────────────────────────────
 const CACHE_VERSION = 'tank-calc-v1';
 const FILES_TO_CACHE = [
-  '/',
-  '/index.html'
+  '/tank-calc/',
+  '/tank-calc/index.html'
 ];
 
 // Install: cache all files
