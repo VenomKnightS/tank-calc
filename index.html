@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tank Transfer Calculator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0f1419;
+      --bg2:      #161d26;
+      --bg3:      #1c2733;
+      --row-alt:  #131a22;
+      --accent:   #f0a500;
+      --text:     #e8edf2;
+      --muted:    #5a6a7a;
+      --dim:      #8a9ab0;
+      --border:   rgba(255,255,255,0.07);
+      --green:    #3dd68c;
+      --blue:     #7ab3f0;
+      --purple:   #a78bfa;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 10px 50px;
+    }
+
+    /* ── BOOKMARK BANNER ── */
+    #bookmark-banner {
+      width: 100%;
+      max-width: 420px;
+      background: linear-gradient(90deg, #1a2a14, #152318);
+      border: 1px solid var(--green);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    #bookmark-banner .bm-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--green);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    #bookmark-banner .bm-text {
+      font-size: 12px;
+      color: var(--dim);
+      line-height: 1.5;
+    }
+    #bookmark-banner .bm-text strong { color: var(--text); }
+    #bookmark-banner .bm-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .bm-btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .bm-btn.primary {
+      background: var(--green);
+      border-color: var(--green);
+      color: #0f1419;
+    }
+    .bm-btn.dismiss {
+      background: transparent;
+      color: var(--muted);
+    }
+
+    /* ── UPDATE BANNER ── */
+    #update-banner {
+      width: 100%;
+      max-width: 420px;
+      background: linear-gradient(90deg, #1a1f2e, #141929);
+      border: 1px solid var(--blue);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+    #update-banner .bm-title { color: var(--blue); font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+    #update-banner .bm-text  { font-size: 12px; color: var(--dim); line-height: 1.5; }
+
+    .header { text-align: center; margin-bottom: 16px; }
+    .eyebrow {
+      font-size: 9px; letter-spacing: 4px; color: var(--accent);
+      text-transform: uppercase; font-weight: 700; margin-bottom: 4px;
+    }
+    h1 { font-size: 20px; font-weight: 800; }
+
+    .sheet {
+      width: 100%;
+      max-width: 420px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .sec-head {
+      background: var(--bg3);
+      padding: 6px 12px;
+      font-size: 9px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--accent);
+      border-bottom: 1px solid var(--border);
+    }
+    .sec-head.green  { color: var(--green);  }
+    .sec-head.blue   { color: var(--blue);   }
+    .sec-head.purple { color: var(--purple); }
+    .sec-head.gold   { color: var(--accent); }
+
+    .row {
+      display: flex;
+      align-items: center;
+      min-height: 42px;
+      padding: 0 10px 0 12px;
+      border-bottom: 1px solid var(--border);
+      gap: 8px;
+    }
+    .row:last-child { border-bottom: none; }
+    .row.alt { background: var(--row-alt); }
+
+    .lbl {
+      flex: 0 0 auto;
+      width: 108px;
+      font-size: 11px;
+      color: var(--dim);
+      line-height: 1.3;
+    }
+    .lbl small { display: block; font-size: 9px; color: var(--muted); margin-top: 1px; }
+
+    .ctrl { flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 6px; }
+
+    .tog-group { display: flex; gap: 4px; }
+    .tog {
+      padding: 5px 10px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--dim);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.12s;
+      min-width: 36px;
+      text-align: center;
+    }
+    .tog.active { background: var(--accent); border-color: var(--accent); color: #0f1419; }
+
+    .ftin { display: flex; align-items: center; gap: 4px; }
+    .ftin-field { position: relative; }
+    .ftin-field input {
+      width: 52px;
+      padding: 6px 18px 6px 6px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 700;
+      text-align: center;
+      outline: none;
+      font-family: inherit;
+      -moz-appearance: textfield;
+    }
+    .ftin-field input::-webkit-outer-spin-button,
+    .ftin-field input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .ftin-field input:focus { border-color: var(--accent); }
+    .ftin-field .unit {
+      position: absolute; right: 4px; bottom: 4px;
+      font-size: 8px; color: var(--muted); font-weight: 700; pointer-events: none;
+    }
+    .ftin-sep { font-size: 10px; color: var(--muted); }
+
+    .num-input {
+      width: 90px;
+      padding: 6px 8px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 700;
+      text-align: center;
+      outline: none;
+      font-family: inherit;
+      -moz-appearance: textfield;
+    }
+    .num-input::-webkit-outer-spin-button,
+    .num-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .num-input:focus { border-color: var(--accent); }
+    .prefix { font-size: 14px; color: var(--muted); font-weight: 700; }
+
+    .out { font-size: 15px; font-weight: 800; color: var(--text); text-align: right; }
+    .out.green  { color: var(--green);  font-size: 18px; }
+    .out.blue   { color: var(--blue);   font-size: 18px; }
+    .out.purple { color: var(--purple); font-size: 18px; }
+    .out.gold   { color: var(--accent); font-size: 18px; }
+
+    .out-hint { font-size: 9px; color: var(--muted); text-align: right; margin-top: 1px; }
+    .out-wrap { display: flex; flex-direction: column; align-items: flex-end; }
+    .sheet-div { height: 1px; background: var(--border); }
+
+    .reset-btn {
+      margin-top: 12px;
+      width: 100%;
+      max-width: 420px;
+      padding: 12px;
+      border-radius: 10px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .hidden { display: none; }
+
+    .stamp-btn {
+      padding: 5px 10px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--bg3);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      transition: all 0.12s;
+    }
+    .stamp-btn:active { background: rgba(240,165,0,0.15); }
+
+    .time-input {
+      width: 88px;
+      padding: 5px 7px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+      outline: none;
+      font-family: inherit;
+    }
+    .time-input:focus { border-color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<!-- BOOKMARK BANNER (shown on first visit) -->
+<div id="bookmark-banner">
+  <div class="bm-title">👋 Welcome — Read This First</div>
+  <div class="bm-text">
+    <strong>What this app does:</strong> Calculates liquid volume transferred from oil field tanks — converts feet and inches to barrels, figures your load target stop point, total charge, and flow rate.<br><br>
+
+    <strong>📌 Step 1 — Bookmark this page now.</strong> This app lives at a web address, not on your phone. If you don't bookmark it you won't be able to find it again easily.<br><br>
+
+    <strong>Chrome / Android:</strong> Tap the <strong>⋮ menu → Bookmarks → Add to Bookmarks</strong>. Save it in a folder called <strong>Calculators</strong>.<br>
+    <strong>Safari / iPhone:</strong> Tap the <strong>Share button → Add Bookmark</strong>.<br><br>
+
+    <strong>📶 Works offline too.</strong> This app has been saved to your browser's cache automatically. It will load and work even with no cell signal. Just use your bookmark — no internet required after this first visit.<br><br>
+
+    <strong>🔄 Updates are automatic.</strong> When improvements are made, you don't need to download anything. Just come back to your bookmark and if an update is ready you'll see a notification at the top. Tap it once and you're on the latest version. You will never need to visit the source or click any files — your bookmark is all you need.
+  </div>
+  <div class="bm-actions">
+    <button class="bm-btn dismiss" onclick="dismissBanner()">Skip</button>
+    <button class="bm-btn primary" onclick="dismissBanner()">Got It — Let's Go ✓</button>
+  </div>
+</div>
+
+<!-- UPDATE BANNER (shown when new version detected) -->
+<div id="update-banner">
+  <div class="bm-title">🔄 Update Available</div>
+  <div class="bm-text">A newer version of this calculator has been downloaded. Tap below to load it.</div>
+  <div class="bm-actions">
+    <button class="bm-btn primary" onclick="applyUpdate()">Reload Now</button>
+  </div>
+</div>
+
+<div class="header">
+  <div class="eyebrow">Field Operations</div>
+  <h1>Tank Transfer Calc</h1>
+</div>
+
+<div class="sheet">
+
+  <!-- SETUP -->
+  <div class="sec-head">Setup</div>
+
+  <div class="row">
+    <div class="lbl"># of Tanks</div>
+    <div class="ctrl">
+      <div class="tog-group">
+        <button class="tog active" onclick="setTankCount(1)">1</button>
+        <button class="tog" onclick="setTankCount(2)">2</button>
+        <button class="tog" onclick="setTankCount(3)">3</button>
+        <button class="tog" onclick="setTankCount(4)">4</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row alt">
+    <div class="lbl">Tank Type</div>
+    <div class="ctrl">
+      <div class="tog-group">
+        <button class="tog active" onclick="setTankType(400)">400 BBL</button>
+        <button class="tog" onclick="setTankType(500)">500 BBL</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="lbl" style="color:var(--muted); font-size:10px;">Rate</div>
+    <div class="ctrl">
+      <span class="out" id="rateDisplay" style="font-size:12px; color:var(--muted);">20 BBL/ft · 1.67 BBL/in</span>
+    </div>
+  </div>
+
+  <!-- START LEVELS -->
+  <div class="sec-head blue">Start Levels</div>
+
+  <div class="row" id="s1row">
+    <div class="lbl">Tank 1<small>Start</small></div>
+    <div class="ctrl">
+      <div class="ftin">
+        <div class="ftin-field"><input type="number" id="t1_sf" min="0" max="30" placeholder="0" oninput="calc()"><span class="unit">ft</span></div>
+        <span class="ftin-sep">—</span>
+        <div class="ftin-field"><input type="number" id="t1_si" min="0" max="11" placeholder="0" oninput="calc()"><span class="unit">in</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="row alt hidden" id="s2row">
+    <div class="lbl">Tank 2<small>Start</small></div>
+    <div class="ctrl">
+      <div class="ftin">
+        <div class="ftin-field"><input type="number" id="t2_sf" min="0" max="30" placeholder="0" oninput="calc()"><span class="unit">ft</span></div>
+        <span class="ftin-sep">—</span>
+        <div class="ftin-field"><input type="number" id="t2_si" min="0" max="11" placeholder="0" oninput="calc()"><span class="unit">in</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="row hidden" id="s3row">
+    <div class="lbl">Tank 3<small>Start</small></div>
+    <div class="ctrl">
+      <div class="ftin">
+        <div class="ftin-field"><input type="number" id="t3_sf" min="0" max="30" placeholder="0" oninput="calc()"><span class="unit">ft</span></div>
+        <span class="ftin-sep">—</span>
+        <div class="ftin-field"><input type="number" id="t3_si" min="0" max="11" placeholder="0" oninput="calc()"><span class="unit">in</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="row alt hidden" id="s4row">
+    <div class="lbl">Tank 4<small>Start</small></div>
+    <div class="ctrl">
+      <div class="ftin">
+        <div class="ftin-field"><input type="number" id="t4_sf" min="0" max="30" placeholder="0" oninput="calc()"><span class="unit">ft</span></div>
+        <span class="ftin-sep">—</span>
+        <div class="ftin-field"><input type="number" id="t4_si" min="0" max="11" placeholder="0" oninput="calc()"><span class="unit">in</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- END LEVELS -->
+  <div class="sec-head green">End Levels</div>
+
+  <div class="row" id="e1row">
+    <div class="lbl">Tank 1<small>End</small></div>
+    <div class="ctrl">
+      <div class="ftin">
+        <div class="ftin-field"><input type="number" id="t1_ef" min="0" max="30" placeholder="0" oninput="calc()"><span class="unit">ft</span></div>
+        <span class="ftin-sep">—</span>
+        <div class="ftin-field"><input type="number" id="t1_ei" min="0" max="11" placeholder="0" oninput="calc()"><span class="unit">in</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="row alt hidden" id="e2row">
+    <div class="lbl">Tank 2<small>End</small></div>
+    <div class="ctrl">
+      <div class="ftin">
+        <div class="ftin-field"><input type="number" id="t2_ef" min="0" max="30" placeholder="0" oninput="calc()"><span class="unit">ft</span></div>
+        <span class="ftin-sep">—</span>
+        <div class="ftin-field"><input type="number" id="t2_ei" min="0" max="11" placeholder="0" oninput="calc()"><span class="unit">in</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="row hidden" id="e3row">
+    <div class="lbl">Tank 3<small>End</small></div>
+    <div class="ctrl">
+      <div class="ftin">
+        <div class="ftin-field"><input type="number" id="t3_ef" min="0" max="30" placeholder="0" oninput="calc()"><span class="unit">ft</span></div>
+        <span class="ftin-sep">—</span>
+        <div class="ftin-field"><input type="number" id="t3_ei" min="0" max="11" placeholder="0" oninput="calc()"><span class="unit">in</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="row alt hidden" id="e4row">
+    <div class="lbl">Tank 4<small>End</small></div>
+    <div class="ctrl">
+      <div class="ftin">
+        <div class="ftin-field"><input type="number" id="t4_ef" min="0" max="30" placeholder="0" oninput="calc()"><span class="unit">ft</span></div>
+        <span class="ftin-sep">—</span>
+        <div class="ftin-field"><input type="number" id="t4_ei" min="0" max="11" placeholder="0" oninput="calc()"><span class="unit">in</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOAD TARGET -->
+  <div class="sec-head blue">Load Target</div>
+
+  <div class="row">
+    <div class="lbl">Target BBL<small>To remove</small></div>
+    <div class="ctrl">
+      <input type="number" class="num-input" id="loadTargetBBL" min="0" placeholder="180" oninput="calc()" />
+      <span style="font-size:11px; color:var(--muted);">BBL</span>
+    </div>
+  </div>
+  <div class="row alt">
+    <div class="lbl">Stop at<small>Per tank avg</small></div>
+    <div class="ctrl">
+      <div class="out-wrap">
+        <span class="out blue" id="r-load-stop">—</span>
+        <span class="out-hint" id="r-load-hint"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRANSFER RESULTS -->
+  <div class="sec-head green">Transfer Results</div>
+
+  <div class="row">
+    <div class="lbl">BBL Transferred</div>
+    <div class="ctrl"><span class="out green" id="r-bbls">—</span></div>
+  </div>
+
+
+
+  <!-- REMAINING -->
+  <div class="sec-head purple">Remaining in Tank</div>
+
+  <div class="row">
+    <div class="lbl">BBL to Leave</div>
+    <div class="ctrl">
+      <input type="number" class="num-input" id="remainTargetBBL" min="0" placeholder="0" oninput="calc()" />
+      <span style="font-size:11px; color:var(--muted);">BBL</span>
+    </div>
+  </div>
+  <div class="row alt">
+    <div class="lbl">Level at that vol.</div>
+    <div class="ctrl"><span class="out purple" id="r-remain-level">—</span></div>
+  </div>
+
+  <!-- PRICING -->
+  <div class="sec-head gold">Load Charge</div>
+
+  <div class="row">
+    <div class="lbl">Price / BBL</div>
+    <div class="ctrl">
+      <span class="prefix">$</span>
+      <input type="number" class="num-input" id="pricePerBBL" min="0" step="0.01" placeholder="1.75" oninput="calc()" />
+    </div>
+  </div>
+  <div class="row alt">
+    <div class="lbl">Total Charge</div>
+    <div class="ctrl">
+      <div class="out-wrap">
+        <span class="out gold" id="r-charge">—</span>
+        <span class="out-hint" id="r-charge-lbl"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOW RATE -->
+  <div class="sec-head" style="color:#f472b6;">Flow Rate</div>
+
+  <div class="row">
+    <div class="lbl">Start Time</div>
+    <div class="ctrl" style="gap:6px;">
+      <input type="time" class="time-input" id="startTime" oninput="calcFlow()" />
+      <button class="stamp-btn" onclick="stampTime('startTime')">Now</button>
+    </div>
+  </div>
+  <div class="row alt">
+    <div class="lbl">End Time</div>
+    <div class="ctrl" style="gap:6px;">
+      <input type="time" class="time-input" id="endTime" oninput="calcFlow()" />
+      <button class="stamp-btn" onclick="stampTime('endTime')">Now</button>
+    </div>
+  </div>
+  <div class="row">
+    <div class="lbl">Duration</div>
+    <div class="ctrl"><span class="out" style="color:#f472b6; font-size:16px;" id="r-duration">—</span></div>
+  </div>
+  <div class="row alt">
+    <div class="lbl">BBL / min</div>
+    <div class="ctrl"><span class="out" style="color:#f472b6; font-size:16px;" id="r-bblmin">—</span></div>
+  </div>
+  <div class="row">
+    <div class="lbl">Gal / min</div>
+    <div class="ctrl"><span class="out" style="color:#f472b6; font-size:16px;" id="r-gpm">—</span></div>
+  </div>
+
+</div>
+
+<button class="reset-btn" onclick="resetAll()">Clear All</button>
+
+<script>
+  // ── SERVICE WORKER REGISTRATION ──
+  let swRegistration = null;
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').then(reg => {
+      swRegistration = reg;
+
+      // Check for updates on every load
+      reg.update();
+
+      // New version waiting → show update banner
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            document.getElementById('update-banner').style.display = 'flex';
+          }
+        });
+      });
+    });
+
+    // After controller changes (update applied), reload to get new version
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      window.location.reload();
+    });
+  }
+
+  function applyUpdate() {
+    if (swRegistration && swRegistration.waiting) {
+      swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+    }
+  }
+
+  // ── BOOKMARK BANNER ──
+  // Show on first visit, remember dismissal in localStorage
+  (function() {
+    if (!localStorage.getItem('bm-dismissed')) {
+      document.getElementById('bookmark-banner').style.display = 'flex';
+    } else {
+      document.getElementById('bookmark-banner').style.display = 'none';
+    }
+  })();
+
+  function dismissBanner() {
+    localStorage.setItem('bm-dismissed', '1');
+    document.getElementById('bookmark-banner').style.display = 'none';
+  }
+
+  // ── CALCULATOR LOGIC ──
+  let tankType  = 400;
+  let tankCount = 1;
+
+  const BBL_PER_IN = { 400: 20/12, 500: 25/12 };
+  const BBL_PER_FT = { 400: 20,    500: 25    };
+
+  function setTankType(t) {
+    tankType = t;
+    document.querySelectorAll('.tog').forEach(b => {
+      if (b.textContent === '400 BBL') b.classList.toggle('active', t === 400);
+      if (b.textContent === '500 BBL') b.classList.toggle('active', t === 500);
+    });
+    document.getElementById('rateDisplay').textContent =
+      `${BBL_PER_FT[t]} BBL/ft · ${BBL_PER_IN[t].toFixed(2)} BBL/in`;
+    calc();
+  }
+
+  function setTankCount(n) {
+    tankCount = n;
+    document.querySelectorAll('.tog').forEach(b => {
+      if (['1','2','3','4'].includes(b.textContent)) {
+        b.classList.toggle('active', parseInt(b.textContent) === n);
+      }
+    });
+    for (let i = 1; i <= 4; i++) {
+      const show = i <= n;
+      document.getElementById(`s${i}row`).classList.toggle('hidden', !show);
+      document.getElementById(`e${i}row`).classList.toggle('hidden', !show);
+    }
+    calc();
+  }
+
+  function v(id) {
+    const n = parseFloat(document.getElementById(id).value);
+    return isNaN(n) ? 0 : n;
+  }
+  function hasV(id) { return document.getElementById(id).value.trim() !== ''; }
+  function toIn(ft, i) { return ft * 12 + i; }
+
+  function fmtFtIn(inches) {
+    if (inches < 0) inches = 0;
+    const ft = Math.floor(inches / 12);
+    const rem = inches - ft * 12;
+    const inR = Math.round(rem * 4) / 4;
+    const inD = inR % 1 === 0 ? inR.toFixed(0) : inR.toFixed(2).replace(/0+$/, '');
+    return `${ft} ft ${inD} in`;
+  }
+
+  function calc() {
+    const bpi = BBL_PER_IN[tankType];
+    let starts = [], ends = [];
+    for (let i = 1; i <= tankCount; i++) {
+      starts.push(toIn(v(`t${i}_sf`), v(`t${i}_si`)));
+      ends.push(toIn(v(`t${i}_ef`), v(`t${i}_ei`)));
+    }
+
+    const avgStart = starts.reduce((a,b) => a+b, 0) / tankCount;
+    const avgEnd   = ends.reduce((a,b) => a+b, 0)   / tankCount;
+    const diffIn   = avgStart - avgEnd;
+    const bbls     = diffIn > 0 ? Math.ceil(diffIn * bpi) : 0;
+
+    const startEntered = hasV('t1_sf') || hasV('t1_si');
+    const endEntered   = hasV('t1_ef') || hasV('t1_ei');
+
+    document.getElementById('r-bbls').textContent = (diffIn > 0 && startEntered && endEntered) ? bbls + ' BBL' : '—';
+
+    const loadTgt = parseFloat(document.getElementById('loadTargetBBL').value);
+    if (!isNaN(loadTgt) && loadTgt > 0 && startEntered) {
+      const stopIn = avgStart - (loadTgt / bpi);
+      if (stopIn >= 0) {
+        document.getElementById('r-load-stop').textContent = fmtFtIn(stopIn);
+        document.getElementById('r-load-hint').textContent = `from ${fmtFtIn(avgStart)} start`;
+      } else {
+        document.getElementById('r-load-stop').textContent = '—';
+        document.getElementById('r-load-hint').textContent = 'Exceeds available volume';
+      }
+    } else {
+      document.getElementById('r-load-stop').textContent = '—';
+      document.getElementById('r-load-hint').textContent = '';
+    }
+
+    const remTgt = parseFloat(document.getElementById('remainTargetBBL').value);
+    document.getElementById('r-remain-level').textContent =
+      !isNaN(remTgt) && remTgt >= 0 ? fmtFtIn(remTgt / bpi) : '—';
+
+    const price = parseFloat(document.getElementById('pricePerBBL').value);
+    if (!isNaN(price) && bbls > 0) {
+      document.getElementById('r-charge').textContent = '$' + (bbls * price).toFixed(2);
+      document.getElementById('r-charge-lbl').textContent = `${bbls} BBL × $${price.toFixed(2)}`;
+    } else {
+      document.getElementById('r-charge').textContent = '—';
+      document.getElementById('r-charge-lbl').textContent = '';
+    }
+
+    calcFlow();
+  }
+
+  function stampTime(id) {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById(id).value = `${hh}:${mm}`;
+    calcFlow();
+  }
+
+  function calcFlow() {
+    const s = document.getElementById('startTime').value;
+    const e = document.getElementById('endTime').value;
+    if (!s || !e) {
+      ['r-duration','r-bblmin','r-gpm'].forEach(id =>
+        document.getElementById(id).textContent = '—');
+      return;
+    }
+    const [sh, sm] = s.split(':').map(Number);
+    const [eh, em] = e.split(':').map(Number);
+    let totalMins = (eh * 60 + em) - (sh * 60 + sm);
+    if (totalMins <= 0) totalMins += 24 * 60;
+    const hrs = Math.floor(totalMins / 60);
+    const mins = totalMins % 60;
+    document.getElementById('r-duration').textContent = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+    const bblsEl = document.getElementById('r-bbls').textContent;
+    const bbls = parseFloat(bblsEl);
+    if (!isNaN(bbls) && bbls > 0 && totalMins > 0) {
+      document.getElementById('r-bblmin').textContent = (bbls / totalMins).toFixed(2) + ' BBL/min';
+      document.getElementById('r-gpm').textContent    = (bbls * 42 / totalMins).toFixed(1) + ' GPM';
+    } else {
+      document.getElementById('r-bblmin').textContent = '—';
+      document.getElementById('r-gpm').textContent    = '—';
+    }
+  }
+
+  function resetAll() {
+    ['t1_sf','t1_si','t1_ef','t1_ei',
+     't2_sf','t2_si','t2_ef','t2_ei',
+     't3_sf','t3_si','t3_ef','t3_ei',
+     't4_sf','t4_si','t4_ef','t4_ei',
+     'loadTargetBBL','remainTargetBBL','pricePerBBL',
+     'startTime','endTime'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    ['r-bbls','r-load-stop','r-remain-level','r-charge','r-duration','r-bblmin','r-gpm'].forEach(id => {
+      document.getElementById(id).textContent = '—';
+    });
+    document.getElementById('r-load-hint').textContent = '';
+    document.getElementById('r-charge-lbl').textContent = '';
+  }
+
+  calc();
+</script>
+</body>
+</html>
