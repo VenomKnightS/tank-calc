@@ -2,10 +2,11 @@
 // BUMP THIS VERSION NUMBER EVERY TIME YOU UPDATE
 // The app will detect the change and refresh the cache automatically
 // ─────────────────────────────────────────────
-const CACHE_VERSION = 'tank-calc-v1';
+const CACHE_VERSION = 'tank-calc-v5';
 const FILES_TO_CACHE = [
   '/tank-calc/',
-  '/tank-calc/index.html'
+  '/tank-calc/index.html',
+  '/tank-calc/locations.json'
 ];
 
 // Install: cache all files
