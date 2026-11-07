@@ -167,6 +167,53 @@
     .settings-note { font-size:10px; color:var(--muted); text-align:center; line-height:1.5; padding:0 4px 8px; }
 
     .hidden { display:none; }
+
+    /* ── SCROLLING TAB BAR (swipe sideways) ── */
+    .tab-bar { overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; scrollbar-width:none; scroll-snap-type:x proximity; gap:6px; }
+    .tab-bar::-webkit-scrollbar { display:none; }
+    .tab { flex:0 0 auto; padding:10px 15px; font-size:12px; white-space:nowrap; scroll-snap-align:center; }
+
+    input[type=date], input[type=time] { color-scheme:dark; }
+    .sel { background:var(--bg3); color:var(--text); border:1px solid var(--border); border-radius:7px; padding:8px 8px; font-size:14px; font-weight:700; font-family:inherit; max-width:215px; outline:none; }
+    .sel:focus { border-color:var(--accent); }
+    .sel option { background:#1c2733; color:#e8edf2; }
+    .num-input.wide { width:110px; }
+    .block-btn { width:100%; padding:12px; border-radius:10px; border:none; background:var(--accent); color:#0f1419; font-size:12px; font-weight:800; cursor:pointer; font-family:inherit; letter-spacing:1px; text-transform:uppercase; }
+    .block-btn.green { background:transparent; border:1px solid var(--green); color:var(--green); }
+    .btn-pair { display:flex; gap:8px; margin-top:10px; }
+    .btn-pair > button { flex:1; }
+    .gap-top { margin-top:12px; }
+    .del-btn { font-size:11px; color:var(--muted); background:transparent; border:1px solid var(--border); border-radius:6px; padding:4px 9px; cursor:pointer; font-family:inherit; font-weight:700; }
+    .empty-note { padding:16px; text-align:center; font-size:12px; color:var(--muted); line-height:1.6; }
+    .st-name { flex:1; font-size:13px; font-weight:700; color:var(--text); }
+    .entry-main { font-size:13px; font-weight:800; color:var(--text); text-align:right; }
+    .entry-sub { font-size:10px; color:var(--muted); text-align:right; margin-top:1px; }
+
+    /* trip stops */
+    .stop { padding:10px 12px 9px; border-bottom:1px solid var(--border); }
+    .stop:last-child { border-bottom:none; }
+    .stop:nth-child(even) { background:var(--row-alt); }
+    .stop-head { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+    .stop-num { flex:0 0 auto; width:24px; height:24px; border-radius:50%; background:var(--accent); color:#0f1419; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+    .stop-name { flex:1; min-width:0; text-align:left; background:transparent; border:1px dashed rgba(255,255,255,0.18); border-radius:7px; padding:6px 9px; color:var(--text); font-size:14px; font-weight:800; font-family:inherit; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .stop-name .pen { color:var(--muted); font-size:11px; margin-left:4px; }
+    .stop-fields { display:flex; align-items:center; gap:6px; flex-wrap:nowrap; }
+    .stop-fields .time-input { width:92px; flex:0 0 auto; }
+    .stop-fields .odo { margin-left:auto; display:flex; align-items:center; gap:5px; }
+    .stop-fields .odo .num-input { width:104px; }
+    .unit-lbl { font-size:11px; color:var(--muted); font-weight:700; }
+    .stop-leg { margin-top:7px; font-size:11px; color:var(--accent); font-weight:700; min-height:0; }
+    .stop-leg.bad { color:#f05252; }
+    .stop-leg:empty { display:none; }
+
+    #tcToast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:#1c2733; border:1px solid var(--accent); color:var(--text); padding:10px 16px; border-radius:10px; font-size:12px; font-weight:700; opacity:0; pointer-events:none; transition:opacity .2s; z-index:50; max-width:90vw; text-align:center; }
+    #tcToast.show { opacity:1; }
+
+    .out.bad { color:#f05252; }
+    .unit-pill { padding:6px 11px; border-radius:7px; background:var(--accent); color:#0f1419; font-size:12px; font-weight:800; letter-spacing:1px; }
+    .conv-btn { padding:7px 11px; border-radius:8px; border:1px solid var(--blue); background:transparent; color:var(--blue); font-size:11px; font-weight:800; cursor:pointer; font-family:inherit; white-space:nowrap; }
+    .conv-btn:active { background:rgba(122,179,240,0.15); }
+    .st-code { font-size:16px; font-weight:800; color:var(--accent); letter-spacing:1px; }
   </style>
 </head>
 <body>
@@ -203,6 +250,8 @@
 <div class="tab-bar">
   <button class="tab active" onclick="switchTab('calc')">⚗️ Calc</button>
   <button class="tab" onclick="switchTab('flow')">🌊 Flow</button>
+  <button class="tab" onclick="switchTab('miles')">🛣️ Miles</button>
+  <button class="tab" onclick="switchTab('trip')">🚚 Trip</button>
   <button class="tab" onclick="switchTab('locs')">📍 Locations</button>
   <button class="tab" onclick="switchTab('settings')">⚙️</button>
 </div>
@@ -409,6 +458,94 @@
 </div>
 
 <!-- ═══════════════════════════════ -->
+<!-- MILES TAB                      -->
+<!-- ═══════════════════════════════ -->
+<div class="tab-panel" id="tab-miles">
+  <div class="sheet">
+    <div class="sec-head blue">Mileage Log</div>
+    <div class="row">
+      <div class="lbl">Units<small>what you enter</small></div>
+      <div class="ctrl">
+        <span class="unit-pill" id="mUnitPill">MI</span>
+        <button class="conv-btn" id="mConvBtn" onclick="convertMiles()">⇄ Convert to KM</button>
+      </div>
+    </div>
+    <div class="row alt">
+      <div class="lbl">State<small>2 letters</small></div>
+      <div class="ctrl"><input type="text" class="num-input" id="mState" maxlength="2" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="MT" style="width:84px;text-transform:uppercase;" oninput="milesStateInput()" /></div>
+    </div>
+    <div class="row">
+      <div class="lbl">Odometer<small>reading</small></div>
+      <div class="ctrl">
+        <input type="number" inputmode="decimal" class="num-input wide" id="mOdo" min="0" step="any" placeholder="0" oninput="milesPreview()" />
+        <span class="unit-lbl" id="mUnitLbl" style="width:26px;">mi</span>
+      </div>
+    </div>
+    <div class="row alt">
+      <div class="lbl">Since last line<small>goes to prev. state</small></div>
+      <div class="ctrl"><span class="out blue" id="mPreview" style="font-size:14px;">—</span></div>
+    </div>
+    <div style="padding:10px 12px;"><button class="block-btn" onclick="addMiles()">+ Add Line</button></div>
+  </div>
+
+  <div class="sheet gap-top">
+    <div class="sec-head green">Miles by State</div>
+    <div id="mTotals"></div>
+  </div>
+
+  <div class="sheet gap-top">
+    <div class="sec-head gold">Lines <button class="clr-btn" onclick="clearMiles()">Clear All</button></div>
+    <div id="mLog"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ -->
+<!-- TRIP TAB                       -->
+<!-- ═══════════════════════════════ -->
+<div class="tab-panel" id="tab-trip">
+  <div class="sheet">
+    <div class="sec-head gold">Trip Info</div>
+    <div class="row">
+      <div class="lbl">Load / Notes<small>Optional</small></div>
+      <div class="ctrl"><input class="loc-input" id="tripName" type="text" maxlength="60" placeholder="Load #, truck, notes" style="max-width:230px;" oninput="tripMetaInput()" /></div>
+    </div>
+    <div class="row alt">
+      <div class="lbl">Date</div>
+      <div class="ctrl"><input type="date" class="time-input" id="tripDate" style="width:150px;" oninput="tripMetaInput()" /></div>
+    </div>
+    <div class="row">
+      <div class="lbl">Odometer unit</div>
+      <div class="ctrl">
+        <div class="tog-group">
+          <button class="tog active" id="tUnitMi" onclick="setTripUnit('mi')">MILES</button>
+          <button class="tog" id="tUnitKm" onclick="setTripUnit('km')">KM</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet gap-top">
+    <div class="sec-head pink">Stops <span style="color:var(--muted);letter-spacing:1px;text-transform:none;font-size:9px;">tap a name to rename</span></div>
+    <div id="tripStops"></div>
+  </div>
+
+  <div class="sheet gap-top">
+    <div class="sec-head green">Trip Totals</div>
+    <div class="row"><div class="lbl">Distance</div><div class="ctrl"><span class="out green" id="tSumDist">—</span></div></div>
+    <div class="row alt"><div class="lbl">Drive time</div><div class="ctrl"><span class="out green" id="tSumTime">—</span></div></div>
+    <div class="row"><div class="lbl">Avg speed</div><div class="ctrl"><span class="out green" id="tSumSpeed">—</span></div></div>
+  </div>
+
+  <div class="btn-pair">
+    <button class="block-btn" onclick="tripAddStop()">+ Add Stop</button>
+    <button class="block-btn green" onclick="tripSaveImage()">🖼 Save Image</button>
+  </div>
+  <button class="reset-btn" onclick="tripClear()">↺ Clear Trip</button>
+</div>
+
+<div id="tcToast"></div>
+
+<!-- ═══════════════════════════════ -->
 <!-- LOCATIONS TAB                  -->
 <!-- ═══════════════════════════════ -->
 <div class="tab-panel" id="tab-locs">
@@ -513,11 +650,19 @@
   function dismissBanner(){localStorage.setItem('bm-dismissed','1');document.getElementById('bookmark-banner').style.display='none';}
 
   // ── TABS ──
-  const TAB_IDS=['calc','flow','locs','settings'];
+  const TAB_IDS=['calc','flow','miles','trip','locs','settings'];
+  function tabIntoView(i){
+    const bar=document.querySelector('.tab-bar'),btn=document.querySelectorAll('.tab-bar .tab')[i];
+    if(!bar||!btn||typeof bar.scrollTo!=='function')return;
+    bar.scrollTo({left:btn.offsetLeft-(bar.clientWidth-btn.offsetWidth)/2,behavior:'smooth'});
+  }
   function switchTab(t){
     document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',TAB_IDS[i]===t));
     TAB_IDS.forEach(id=>document.getElementById('tab-'+id).classList.toggle('active',id===t));
     if(t==='locs')renderLocations();
+    if(t==='miles')renderMiles();
+    if(t==='trip')renderTrip();
+    tabIntoView(TAB_IDS.indexOf(t));
     if(t==='settings')loadGitHubSettings();
   }
 
@@ -1142,6 +1287,431 @@
     }
     el.innerHTML=html;
   }
+
+  // ════════════════════════════════════════════════════════
+  // SHARED HELPERS (Miles + Trip tabs)
+  // Storage keys are permanent. Data carries a version field and is
+  // merged over defaults on load, so app updates never wipe saved data.
+  // ════════════════════════════════════════════════════════
+  const LS_MILES='tc_miles_v1', LS_TRIP='tc_trip_v1';
+  const KM_PER_MI=1.609344;
+
+  function tcEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function tcNum(s){const n=parseFloat(s);return isFinite(n)?n:null;}
+  function tcPad(n){return String(n).padStart(2,'0');}
+  function tcToday(){const d=new Date();return d.getFullYear()+'-'+tcPad(d.getMonth()+1)+'-'+tcPad(d.getDate());}
+  function tcLoad(key,makeDefault){
+    const def=makeDefault();
+    try{
+      const raw=localStorage.getItem(key);
+      if(!raw) return def;
+      const o=JSON.parse(raw);
+      return (o&&typeof o==='object')?Object.assign(def,o):def;
+    }catch(e){return def;}
+  }
+  function tcSave(key,obj){try{localStorage.setItem(key,JSON.stringify(obj));}catch(e){}}
+  let tcToastTimer=null;
+  function tcToast(msg){
+    const el=document.getElementById('tcToast');
+    el.textContent=msg;el.classList.add('show');
+    clearTimeout(tcToastTimer);
+    tcToastTimer=setTimeout(()=>el.classList.remove('show'),2200);
+  }
+  function tcFmt(n,d){return Number(n).toFixed(d==null?1:d);}
+  function tcDateLabel(iso){
+    if(!iso)return '';
+    const p=iso.split('-').map(Number);
+    if(p.length!==3||p.some(isNaN))return iso;
+    return new Date(p[0],p[1]-1,p[2]).toLocaleDateString(undefined,{month:'short',day:'numeric'});
+  }
+
+  // ════════════════════════════════════════════════════════
+  // MILES TAB — odometer lines by state
+  // Each line = typed 2-letter state + odometer reading. The distance from a
+  // reading to the NEXT reading is credited to that line's state (the state
+  // you were driving in). The newest line has no miles yet — it's "current".
+  // Permanent key LS_MILES; data is versioned (v2) and migrated in place.
+  // ════════════════════════════════════════════════════════
+  let miles=tcLoad(LS_MILES,()=>({v:2,lines:[],unit:'mi',legacy:[]}));
+  (function migrateMiles(){
+    if((miles.v||1)<2){
+      // v1 stored independent per-state distances in `entries`; keep them
+      // (never discard user data) under `legacy`, start the new log empty.
+      if(Array.isArray(miles.entries)&&miles.entries.length) miles.legacy=(Array.isArray(miles.legacy)?miles.legacy:[]).concat(miles.entries);
+      delete miles.entries;delete miles.lastState;
+      miles.lines=[];miles.v=2;
+      tcSave(LS_MILES,miles);
+    }
+    if(!Array.isArray(miles.legacy)) miles.legacy=[];
+    if(!Array.isArray(miles.lines)) miles.lines=[];
+    miles.lines=miles.lines.filter(l=>l&&/^[A-Z]{2}$/.test(l.state)&&isFinite(l.odo));
+    if(miles.unit!=='mi'&&miles.unit!=='km') miles.unit='mi';
+  })();
+
+  function milesSave(){tcSave(LS_MILES,miles);}
+  function milesOther(){return miles.unit==='mi'?'km':'mi';}
+  function milesFmtOdo(n){return Number(n).toLocaleString(undefined,{maximumFractionDigits:1});}
+  function milesClean(raw){return String(raw||'').replace(/[^a-zA-Z]/g,'').toUpperCase().slice(0,2);}
+  function milesSegments(){
+    const L=miles.lines,segs=[],by={};let total=0;
+    for(let i=0;i<L.length;i++){
+      if(i<L.length-1){
+        const d=L[i+1].odo-L[i].odo;
+        segs.push(d);by[L[i].state]=(by[L[i].state]||0)+d;total+=d;
+      }else segs.push(null);
+    }
+    return {segs,by,total};
+  }
+  function applyMilesUnitUI(){
+    document.getElementById('mUnitPill').textContent=miles.unit.toUpperCase();
+    document.getElementById('mUnitLbl').textContent=miles.unit;
+    const o=milesOther().toUpperCase();
+    // with nothing logged yet there is nothing to convert — it just switches the entry unit
+    document.getElementById('mConvBtn').textContent=miles.lines.length?'⇄ Convert to '+o:'⇄ Enter in '+o;
+  }
+  function milesStateInput(){
+    const el=document.getElementById('mState'),c=milesClean(el.value);
+    if(el.value!==c) el.value=c;
+    milesPreview();
+  }
+  function milesPreview(){
+    const out=document.getElementById('mPreview');
+    const o=tcNum(document.getElementById('mOdo').value),L=miles.lines;
+    out.classList.remove('bad');
+    if(o===null||o<0){out.textContent='—';return;}
+    if(!L.length){out.textContent='Starting point';return;}
+    const last=L[L.length-1];
+    if(o<last.odo){out.textContent='⚠ lower than last ('+milesFmtOdo(last.odo)+')';out.classList.add('bad');return;}
+    out.textContent='+'+tcFmt(o-last.odo)+' '+miles.unit+' → '+last.state;
+  }
+  function addMiles(){
+    const stEl=document.getElementById('mState'),odoEl=document.getElementById('mOdo');
+    const st=milesClean(stEl.value),o=tcNum(odoEl.value),L=miles.lines;
+    if(st.length!==2){tcToast('Type the 2-letter state, e.g. MT');return;}
+    if(o===null||o<0){tcToast('Enter the odometer reading');return;}
+    if(L.length&&o<L[L.length-1].odo){tcToast('Reading is lower than the last line');return;}
+    const prev=L.length?L[L.length-1]:null;
+    L.push({id:Date.now()+Math.floor(Math.random()*1000),state:st,odo:o});
+    milesSave();
+    stEl.value='';odoEl.value='';
+    milesPreview();renderMiles();
+    tcToast(prev?tcFmt(o-prev.odo)+' '+miles.unit+' → '+prev.state:'Start: '+st+' @ '+milesFmtOdo(o));
+  }
+  function deleteMiles(id){
+    miles.lines=miles.lines.filter(l=>l.id!==id);
+    milesSave();renderMiles();milesPreview();
+  }
+  function clearMiles(){
+    if(!miles.lines.length)return;
+    if(!confirm('Delete ALL mileage lines? This cannot be undone.'))return;
+    miles.lines=[];milesSave();renderMiles();milesPreview();
+  }
+  // One button: converts every saved reading (and any reading typed but not
+  // added yet) to the other unit and flips the entry unit.
+  function convertMiles(){
+    const toKm=miles.unit==='mi';
+    const f=toKm?KM_PER_MI:1/KM_PER_MI;
+    const r6=n=>Math.round(n*1e6)/1e6;
+    miles.lines.forEach(l=>{l.odo=r6(l.odo*f);});
+    miles.unit=toKm?'km':'mi';
+    const odoEl=document.getElementById('mOdo'),v=tcNum(odoEl.value);
+    if(v!==null) odoEl.value=String(r6(v*f));
+    milesSave();renderMiles();milesPreview();
+  }
+  function initMilesTab(){applyMilesUnitUI();}
+  function renderMiles(){
+    applyMilesUnitUI();
+    const L=miles.lines,u=miles.unit;
+    const {segs,by,total}=milesSegments();
+
+    // Miles by state
+    const keys=Object.keys(by).sort((a,b)=>by[b]-by[a]);
+    const tot=document.getElementById('mTotals');
+    if(!keys.length){
+      tot.innerHTML='<div class="empty-note">Add your starting reading, then a line each time you change state.<br>The miles between two readings count for the earlier line\'s state.</div>';
+    }else{
+      const hint=m=>u==='mi'?tcFmt(m*KM_PER_MI)+' km':tcFmt(m/KM_PER_MI)+' mi';
+      const row=(label,m,alt,strong)=>`<div class="row${alt?' alt':''}"><div class="st-name"${strong?' style="color:var(--accent)"':''}>${tcEsc(label)}</div><div class="ctrl"><div class="out-wrap"><span class="out green" style="font-size:15px">${tcFmt(m)} ${u}</span><span class="out-hint">${hint(m)}</span></div></div></div>`;
+      tot.innerHTML=row('Total driven',total,false,true)+keys.map((k,i)=>row(k,by[k],i%2===0,false)).join('');
+    }
+
+    // Lines (chronological, newest at the bottom)
+    const log=document.getElementById('mLog');
+    if(!L.length){
+      log.innerHTML='<div class="empty-note">Lines show up here.</div>';
+    }else{
+      log.innerHTML=L.map((l,i)=>{
+        const d=segs[i];
+        const right=d===null
+          ?`<div class="entry-main" style="color:var(--accent)">current</div><div class="entry-sub">in progress</div>`
+          :`<div class="entry-main">${tcFmt(d)} ${u}</div><div class="entry-sub">driven in ${tcEsc(l.state)}</div>`;
+        return `<div class="row${i%2?' alt':''}"><div class="st-name"><span class="st-code">${tcEsc(l.state)}</span><div class="entry-sub" style="text-align:left">Odometer ${milesFmtOdo(l.odo)} ${u}</div></div><div class="ctrl"><div>${right}</div><button class="del-btn" onclick="deleteMiles(${l.id})">✕</button></div></div>`;
+      }).join('');
+    }
+  }
+
+  // ════════════════════════════════════════════════════════
+  // TRIP TAB — location → location log, timestamps, odometer, image export
+  // ════════════════════════════════════════════════════════
+  function tripDefault(){
+    return {v:1,name:'',date:tcToday(),unit:'mi',nextId:3,
+      stops:[{id:1,name:null,time:'',odo:''},{id:2,name:null,time:'',odo:''}]};
+  }
+  let trip=tcLoad(LS_TRIP,tripDefault);
+  (function normalizeTrip(){
+    if(!Array.isArray(trip.stops)||trip.stops.length<2){const d=tripDefault();trip.stops=d.stops;trip.nextId=d.nextId;}
+    trip.stops=trip.stops.map((s,i)=>({id:s.id||(i+1),name:s.name||null,time:s.time||'',odo:s.odo==null?'':String(s.odo)}));
+    const maxId=Math.max(...trip.stops.map(s=>s.id));
+    if(!trip.nextId||trip.nextId<=maxId) trip.nextId=maxId+1;
+    if(trip.unit!=='mi'&&trip.unit!=='km') trip.unit='mi';
+    if(!trip.date) trip.date=tcToday();
+  })();
+  let tripEditing=-1;
+
+  function tripSave(){tcSave(LS_TRIP,trip);}
+  function tripStopName(i){return trip.stops[i].name||('Location '+(i+1));}
+  function tripParseTime(t){
+    if(!t)return null;
+    const m=/^(\d{1,2}):(\d{2})$/.exec(t);
+    return m?(+m[1])*60+(+m[2]):null;
+  }
+  function tripFmtDur(mins){
+    const h=Math.floor(mins/60),m=Math.round(mins%60);
+    return h>0?h+'h '+tcPad(m)+'m':m+'m';
+  }
+  function tripFmt12(t){
+    const p=tripParseTime(t);if(p===null)return '';
+    let h=Math.floor(p/60);const m=p%60;
+    const ap=h>=12?'PM':'AM';h=h%12;if(h===0)h=12;
+    return h+':'+tcPad(m)+' '+ap;
+  }
+  function tripDistText(d){
+    // d is in the trip's odometer unit; show the other unit alongside
+    const u=trip.unit;
+    const other=u==='mi'?tcFmt(d*KM_PER_MI)+' km':tcFmt(d/KM_PER_MI)+' mi';
+    return tcFmt(d)+' '+u+' ('+other+')';
+  }
+  function tripCompute(){
+    const legs=[];let pO=null,pT=null,totD=0,totM=0,haveD=false,haveM=false;
+    trip.stops.forEach(s=>{
+      const o=tcNum(s.odo),t=tripParseTime(s.time);
+      let dist=null,mins=null,bad=false;
+      if(o!==null){
+        if(pO===null){pO=o;}
+        else if(o>=pO){dist=o-pO;totD+=dist;haveD=true;pO=o;}
+        else{bad=true;}
+      }
+      if(t!==null){
+        if(pT!==null){let d=t-pT;if(d<0)d+=1440;mins=d;totM+=d;haveM=true;}
+        pT=t;
+      }
+      legs.push({dist,mins,bad});
+    });
+    return {legs,totD:haveD?totD:null,totM:haveM?totM:null};
+  }
+
+  function renderTrip(){
+    document.getElementById('tripName').value=trip.name||'';
+    document.getElementById('tripDate').value=trip.date||'';
+    document.getElementById('tUnitMi').classList.toggle('active',trip.unit==='mi');
+    document.getElementById('tUnitKm').classList.toggle('active',trip.unit==='km');
+    renderTripStops();
+  }
+  function renderTripStops(){
+    const canRemove=trip.stops.length>2;
+    document.getElementById('tripStops').innerHTML=trip.stops.map((s,i)=>{
+      const nameCtl=(tripEditing===i)
+        ?`<input id="tripNameEdit" class="loc-input" style="flex:1;min-width:0;font-weight:800;" maxlength="40" value="${tcEsc(s.name||'')}" placeholder="Location ${i+1}" onblur="tripNameCommit(${i},this.value,false)" onkeydown="if(event.key==='Enter'){this.blur();}else if(event.key==='Escape'){tripNameCommit(${i},this.value,true);}">`
+        :`<button class="stop-name" onclick="tripRename(${i})">${tcEsc(tripStopName(i))}<span class="pen">✎</span></button>`;
+      return `<div class="stop">
+        <div class="stop-head"><span class="stop-num">${i+1}</span>${nameCtl}${canRemove?`<button class="del-btn" onclick="tripRemove(${i})">✕</button>`:''}</div>
+        <div class="stop-fields">
+          <input type="time" class="time-input" id="stT${i}" value="${tcEsc(s.time)}" oninput="tripField(${i},'time',this.value)">
+          <button class="stamp-btn" onclick="tripStamp(${i})">Now</button>
+          <div class="odo"><input type="number" inputmode="decimal" step="any" min="0" class="num-input" id="stO${i}" value="${tcEsc(s.odo)}" placeholder="odometer" oninput="tripField(${i},'odo',this.value)"><span class="unit-lbl">${trip.unit}</span></div>
+        </div>
+        <div class="stop-leg" id="stL${i}"></div>
+      </div>`;
+    }).join('');
+    updateTripDerived();
+  }
+  function updateTripDerived(){
+    const c=tripCompute();
+    c.legs.forEach((l,i)=>{
+      const el=document.getElementById('stL'+i);
+      if(!el)return;
+      if(i===0){el.textContent='';el.classList.remove('bad');return;}
+      if(l.bad){el.textContent='⚠ odometer is lower than the previous reading';el.classList.add('bad');return;}
+      el.classList.remove('bad');
+      const parts=[];
+      if(l.dist!==null)parts.push(tripDistText(l.dist));
+      if(l.mins!==null)parts.push(tripFmtDur(l.mins));
+      el.textContent=parts.length?'↳ '+parts.join(' · '):'';
+    });
+    document.getElementById('tSumDist').textContent=c.totD!==null?tripDistText(c.totD):'—';
+    document.getElementById('tSumTime').textContent=c.totM!==null?tripFmtDur(c.totM):'—';
+    const hrs=c.totM?c.totM/60:0;
+    document.getElementById('tSumSpeed').textContent=(c.totD!==null&&hrs>0)?tcFmt(c.totD/hrs)+' '+trip.unit+'/h':'—';
+  }
+
+  function tripMetaInput(){
+    trip.name=document.getElementById('tripName').value;
+    trip.date=document.getElementById('tripDate').value;
+    tripSave();
+  }
+  function setTripUnit(u){
+    trip.unit=u;tripSave();
+    document.getElementById('tUnitMi').classList.toggle('active',u==='mi');
+    document.getElementById('tUnitKm').classList.toggle('active',u==='km');
+    renderTripStops();
+  }
+  function tripField(i,key,val){trip.stops[i][key]=val;tripSave();updateTripDerived();}
+  function tripStamp(i){
+    const d=new Date(),t=tcPad(d.getHours())+':'+tcPad(d.getMinutes());
+    trip.stops[i].time=t;
+    document.getElementById('stT'+i).value=t;
+    tripSave();updateTripDerived();
+  }
+  function tripRename(i){
+    tripEditing=i;renderTripStops();
+    const el=document.getElementById('tripNameEdit');
+    if(el){el.focus();el.select();}
+  }
+  function tripNameCommit(i,val,cancel){
+    if(tripEditing!==i)return;
+    tripEditing=-1;
+    if(!cancel){trip.stops[i].name=val.trim()||null;tripSave();}
+    renderTripStops();
+  }
+  function tripAddStop(){
+    trip.stops.push({id:trip.nextId++,name:null,time:'',odo:''});
+    tripSave();renderTripStops();
+    tcToast('Added '+tripStopName(trip.stops.length-1));
+  }
+  function tripRemove(i){
+    if(trip.stops.length<=2)return;
+    const s=trip.stops[i];
+    if((s.time||s.odo||s.name)&&!confirm('Remove '+tripStopName(i)+'?'))return;
+    trip.stops.splice(i,1);
+    tripEditing=-1;
+    tripSave();renderTripStops();
+  }
+  function tripClear(){
+    if(!confirm('Clear this whole trip (names, times, odometer)?'))return;
+    const keepUnit=trip.unit;
+    trip=tripDefault();trip.unit=keepUnit;tripEditing=-1;
+    tripSave();renderTrip();
+  }
+
+  // ── Save trip as PNG image ──
+  function tripFitText(ctx,text,maxW){
+    if(ctx.measureText(text).width<=maxW)return text;
+    let t=text;
+    while(t.length>1&&ctx.measureText(t+'…').width>maxW)t=t.slice(0,-1);
+    return t+'…';
+  }
+  function tripBuildCanvas(){
+    const c=tripCompute();
+    const n=trip.stops.length;
+    const W=1000,S=2,rowH=116,legH=66,headH=220;
+    const totals=[];
+    if(c.totD!==null)totals.push(['TOTAL DISTANCE',tripDistText(c.totD)]);
+    if(c.totM!==null)totals.push(['DRIVE TIME',tripFmtDur(c.totM)]);
+    if(c.totD!==null&&c.totM>0)totals.push(['AVG SPEED',tcFmt(c.totD/(c.totM/60))+' '+trip.unit+'/h']);
+    const footH=(totals.length?40+totals.length*66:0)+110;
+    const H=headH+n*rowH+(n-1)*legH+footH;
+    const cv=document.createElement('canvas');
+    cv.width=W*S;cv.height=H*S;
+    const x=cv.getContext('2d');
+    x.scale(S,S);
+    const FONT='"Segoe UI",Roboto,Arial,sans-serif';
+    x.fillStyle='#ffffff';x.fillRect(0,0,W,H);
+    x.fillStyle='#f0a500';x.fillRect(0,0,W,16);
+    x.textBaseline='alphabetic';x.textAlign='left';
+
+    // header
+    x.fillStyle='#b27700';x.font='700 26px '+FONT;x.fillText('TRIP LOG',50,78);
+    x.fillStyle='#111827';x.font='800 54px '+FONT;
+    x.fillText(tripFitText(x,(trip.name||'').trim()||'Load Trip',W-100),50,142);
+    x.fillStyle='#6b7280';x.font='600 28px '+FONT;
+    let dateLine='';
+    if(trip.date){const p=trip.date.split('-').map(Number);if(p.length===3&&!p.some(isNaN))dateLine=new Date(p[0],p[1]-1,p[2]).toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'});}
+    x.fillText(dateLine,50,188);
+
+    // stops
+    const CX=84;
+    for(let i=0;i<n;i++){
+      const s=trip.stops[i],top=headH+i*(rowH+legH);
+      if(i<n-1){
+        x.strokeStyle='#f0a500';x.lineWidth=5;x.beginPath();
+        x.moveTo(CX,top+40+28);x.lineTo(CX,top+rowH+legH+40-28);x.stroke();
+      }
+      x.fillStyle='#f0a500';x.beginPath();x.arc(CX,top+40,28,0,Math.PI*2);x.fill();
+      x.fillStyle='#111827';x.font='800 30px '+FONT;x.textAlign='center';
+      x.fillText(String(i+1),CX,top+51);
+
+      x.textAlign='right';
+      const tm=tripFmt12(s.time);
+      x.font='800 38px '+FONT;
+      const timeW=tm?x.measureText(tm).width:0;
+      if(tm){x.fillStyle='#111827';x.fillText(tm,W-50,top+52);}
+
+      x.textAlign='left';
+      x.fillStyle='#111827';x.font='800 40px '+FONT;
+      x.fillText(tripFitText(x,tripStopName(i),W-150-50-timeW-24),140,top+52);
+      const o=tcNum(s.odo);
+      if(o!==null){
+        x.fillStyle='#6b7280';x.font='600 26px '+FONT;
+        x.fillText('Odometer '+o.toLocaleString(undefined,{maximumFractionDigits:1})+' '+trip.unit,140,top+92);
+      }
+      if(i>0){
+        // leg text sits in the gap above this stop
+        const l=c.legs[i],parts=[];
+        if(l.bad)parts.push('check odometer');
+        if(l.dist!==null)parts.push(tripDistText(l.dist));
+        if(l.mins!==null)parts.push(tripFmtDur(l.mins));
+        if(parts.length){
+          x.fillStyle=l.bad?'#dc2626':'#b27700';x.font='700 28px '+FONT;
+          x.fillText('↓ '+parts.join('  ·  '),140,top-legH+42);
+        }
+      }
+    }
+
+    // totals
+    let y=headH+n*rowH+(n-1)*legH+20;
+    if(totals.length){
+      x.strokeStyle='#e5e7eb';x.lineWidth=2;x.beginPath();x.moveTo(50,y);x.lineTo(W-50,y);x.stroke();
+      y+=26;
+      totals.forEach(t=>{
+        y+=40;
+        x.textAlign='left';x.fillStyle='#6b7280';x.font='700 24px '+FONT;x.fillText(t[0],50,y);
+        x.textAlign='right';x.fillStyle='#111827';x.font='800 36px '+FONT;x.fillText(t[1],W-50,y+2);
+        y+=26;
+      });
+    }
+    x.textAlign='center';x.fillStyle='#9ca3af';x.font='600 22px '+FONT;
+    x.fillText('Tank Calc · saved '+new Date().toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}),W/2,H-34);
+    return cv;
+  }
+  function tripSaveImage(){
+    let cv;
+    try{cv=tripBuildCanvas();}catch(e){tcToast('Could not build image');return;}
+    cv.toBlob(b=>{
+      if(!b){tcToast('Could not create image');return;}
+      const slug=(trip.name||'').trim().replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'').slice(0,30);
+      const fname='trip-log'+(slug?'-'+slug:'')+'-'+(trip.date||tcToday())+'.png';
+      const url=URL.createObjectURL(b);
+      const a=document.createElement('a');
+      a.href=url;a.download=fname;
+      document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),5000);
+      tcToast('Image saved to Downloads');
+    },'image/png');
+  }
+
+  initMilesTab();
+  renderMiles();
+  renderTrip();
 
   // ── INIT ──────────────────────────────────────────────
   renderInputs();   // build initial ft/in fields
