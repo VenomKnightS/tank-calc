@@ -191,20 +191,20 @@
 
     /* trip: one line per location */
     .unit-lbl { font-size:11px; color:var(--muted); font-weight:700; }
-    .tg { display:grid; grid-template-columns:minmax(0,1fr) 72px 72px 58px 36px; gap:4px; align-items:center; padding:0 8px; }
+    .tg { display:grid; grid-template-columns:minmax(0,1fr) 68px 68px 54px 34px; gap:4px; align-items:center; padding:0 8px; }
     .tg-head { padding-top:8px; padding-bottom:6px; font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); font-weight:700; border-bottom:1px solid var(--border); }
     .tg-head span + span { text-align:center; }
     .tg-row { padding-top:6px; padding-bottom:6px; border-top:1px solid var(--border); }
     .job { border-bottom:1px solid var(--border); }
     .job:last-child { border-bottom:none; }
-    .job-head { display:flex; align-items:center; gap:8px; padding:7px 10px 6px; background:var(--bg3); }
+    .job-head { display:flex; align-items:center; gap:8px; padding:4px 10px; background:var(--bg3); }
     .job-tag { font-size:10px; font-weight:800; letter-spacing:2px; color:var(--accent); }
     .job-sub { font-size:9px; color:var(--muted); letter-spacing:.5px; }
     .job-dist { margin-left:auto; font-size:12px; font-weight:800; color:var(--green); text-align:right; }
     .job-dist.bad { color:#f05252; }
     .stop-name { min-width:0; width:100%; text-align:left; background:transparent; border:1px dashed rgba(255,255,255,0.18); border-radius:7px; padding:7px 6px; color:var(--text); font-size:13px; font-weight:800; font-family:inherit; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .tg .loc-input { min-width:0; width:100%; padding:6px 6px; font-size:13px; font-weight:800; }
-    .tin, .oin { width:100%; min-width:0; padding:7px 2px; background:var(--bg3); border:1px solid var(--border); border-radius:7px; color:var(--text); font-size:12px; font-weight:700; text-align:center; outline:none; font-family:inherit; }
+    .tin, .oin { width:100%; min-width:0; padding:7px 1px; background:var(--bg3); border:1px solid var(--border); border-radius:7px; color:var(--text); font-size:12px; font-weight:700; text-align:center; outline:none; font-family:inherit; }
     .oin { -moz-appearance:textfield; }
     .oin::-webkit-outer-spin-button, .oin::-webkit-inner-spin-button { -webkit-appearance:none; }
     .tin:focus, .oin:focus { border-color:var(--accent); }
@@ -212,6 +212,12 @@
     .now-btn:active { background:rgba(240,165,0,0.18); }
     .trip-note { padding:9px 12px; font-size:10px; color:var(--muted); line-height:1.55; border-top:1px solid var(--border); }
 
+    .mrow { display:grid; grid-template-columns:minmax(0,1fr) 64px 64px 36px; gap:6px; align-items:center; padding:6px 10px; border-top:1px solid var(--border); }
+    .mhead { border-top:none; border-bottom:1px solid var(--border); font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); font-weight:700; padding-top:8px; padding-bottom:6px; }
+    .mo { text-align:left; padding-left:10px; font-size:15px; }
+    .ms { text-transform:uppercase; font-size:15px; letter-spacing:1px; }
+    .mdelta { font-size:12px; font-weight:800; color:var(--green); text-align:right; white-space:nowrap; }
+    .mdelta.bad { color:#f05252; }
     #tcToast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:#1c2733; border:1px solid var(--accent); color:var(--text); padding:10px 16px; border-radius:10px; font-size:12px; font-weight:700; opacity:0; pointer-events:none; transition:opacity .2s; z-index:50; max-width:90vw; text-align:center; }
     #tcToast.show { opacity:1; }
 
@@ -470,38 +476,22 @@
   <div class="sheet">
     <div class="sec-head blue">IFTA Mileage</div>
     <div class="row">
-      <div class="lbl">Units<small>what you enter</small></div>
+      <div class="lbl">Units</div>
       <div class="ctrl">
-        <span class="unit-pill" id="mUnitPill">MI</span>
-        <button class="conv-btn" id="mConvBtn" onclick="convertMiles()">⇄ Convert to KM</button>
+        <div class="tog-group">
+          <button class="tog active" id="mUnitMi" onclick="setMilesUnit('mi')">MI</button>
+          <button class="tog" id="mUnitKm" onclick="setMilesUnit('km')">KM</button>
+        </div>
       </div>
     </div>
-    <div class="row alt">
-      <div class="lbl">State<small>2 letters</small></div>
-      <div class="ctrl"><input type="text" class="num-input" id="mState" maxlength="2" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="XX" style="width:84px;text-transform:uppercase;" oninput="milesStateInput()" /></div>
-    </div>
-    <div class="row">
-      <div class="lbl">Odometer<small>reading</small></div>
-      <div class="ctrl">
-        <input type="number" inputmode="decimal" class="num-input wide" id="mOdo" min="0" step="any" placeholder="0" oninput="milesPreview()" />
-        <span class="unit-lbl" id="mUnitLbl" style="width:26px;">mi</span>
-      </div>
-    </div>
-    <div class="row alt">
-      <div class="lbl">Since last line<small>goes to prev. state</small></div>
-      <div class="ctrl"><span class="out blue" id="mPreview" style="font-size:14px;">—</span></div>
-    </div>
-    <div style="padding:10px 12px;"><button class="block-btn" onclick="addMiles()">+ Add Line</button></div>
+    <div class="mrow mhead"><span id="mOdoHead">Odometer</span><span>State</span><span></span><span></span></div>
+    <div id="mRows"></div>
+    <div class="trip-note">First line = start of shift. Miles between two lines are credited to the earlier line's state. The report below updates as you type.</div>
   </div>
 
   <div class="sheet gap-top">
-    <div class="sec-head green">Miles by State</div>
+    <div class="sec-head green">Miles by State <button class="clr-btn" onclick="clearMiles()">Clear All</button></div>
     <div id="mTotals"></div>
-  </div>
-
-  <div class="sheet gap-top">
-    <div class="sec-head gold">Lines <button class="clr-btn" onclick="clearMiles()">Clear All</button></div>
-    <div id="mLog"></div>
   </div>
 </div>
 
@@ -1345,7 +1335,8 @@
     }
     if(!Array.isArray(miles.legacy)) miles.legacy=[];
     if(!Array.isArray(miles.lines)) miles.lines=[];
-    miles.lines=miles.lines.filter(l=>l&&/^[A-Z]{2}$/.test(l.state)&&isFinite(l.odo));
+    // lines may be partly filled in (state or odometer still blank) — keep them
+    miles.lines=miles.lines.filter(l=>l&&typeof l==='object').map((l,i)=>({id:l.id||(Date.now()+i),state:milesClean(l.state),odo:(l.odo===null||l.odo===''||l.odo===undefined||!isFinite(l.odo))?null:Number(l.odo)}));
     if(miles.unit!=='mi'&&miles.unit!=='km') miles.unit='mi';
   })();
 
@@ -1353,102 +1344,103 @@
   function milesOther(){return miles.unit==='mi'?'km':'mi';}
   function milesFmtOdo(n){return Number(n).toLocaleString(undefined,{maximumFractionDigits:1});}
   function milesClean(raw){return String(raw||'').replace(/[^a-zA-Z]/g,'').toUpperCase().slice(0,2);}
+  function milesLineOk(l){return /^[A-Z]{2}$/.test(l.state)&&l.odo!==null&&isFinite(l.odo)&&l.odo>=0;}
+  // Miles from one complete reading to the next complete reading belong to the EARLIER line's state.
   function milesSegments(){
-    const L=miles.lines,segs=[],by={};let total=0;
-    for(let i=0;i<L.length;i++){
-      if(i<L.length-1){
-        const d=L[i+1].odo-L[i].odo;
-        segs.push(d);by[L[i].state]=(by[L[i].state]||0)+d;total+=d;
-      }else segs.push(null);
-    }
-    return {segs,by,total};
+    const segs={},by={},bad={};let total=0,prev=null;
+    miles.lines.forEach(l=>{
+      if(!milesLineOk(l))return;
+      if(prev){
+        const d=l.odo-prev.odo;
+        if(d<0){bad[l.id]=true;return;}          // lower than the previous reading — ignored, flagged
+        segs[l.id]={d,st:prev.state};
+        by[prev.state]=(by[prev.state]||0)+d;total+=d;
+      }
+      prev=l;
+    });
+    return {segs,by,total,bad};
   }
-  function applyMilesUnitUI(){
-    document.getElementById('mUnitPill').textContent=miles.unit.toUpperCase();
-    document.getElementById('mUnitLbl').textContent=miles.unit;
-    const o=milesOther().toUpperCase();
-    // with nothing logged yet there is nothing to convert — it just switches the entry unit
-    document.getElementById('mConvBtn').textContent=miles.lines.length?'⇄ Convert to '+o:'⇄ Enter in '+o;
+  function milesRowHtml(i){
+    const l=miles.lines[i]||{id:0,state:'',odo:null};
+    const has=!!miles.lines[i];
+    return `<div class="mrow" id="mr${i}">
+      <input type="number" inputmode="decimal" step="any" min="0" class="oin mo" id="mO${i}" placeholder="Odometer" value="${l.odo===null?'':tcEsc(String(l.odo))}" oninput="milesRowInput(${i},'odo',this)" onkeydown="milesKey(event,${i},'odo')">
+      <input type="text" class="tin ms" id="mS${i}" maxlength="2" placeholder="ST" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" value="${tcEsc(l.state)}" oninput="milesRowInput(${i},'state',this)" onkeydown="milesKey(event,${i},'state')">
+      <span class="mdelta" id="mD${i}"></span>
+      ${has?`<button class="del-btn" onclick="deleteMiles(${i})">✕</button>`:'<span></span>'}
+    </div>`;
   }
-  function milesStateInput(){
-    const el=document.getElementById('mState'),c=milesClean(el.value);
-    if(el.value!==c) el.value=c;
-    milesPreview();
+  // rows = every saved line, plus ONE blank row once the last line is complete
+  function milesWantBlank(){const L=miles.lines;return !L.length||milesLineOk(L[L.length-1]);}
+  function renderMilesRows(){
+    const ae=document.activeElement,keep=ae&&/^m[OS]\d+$/.test(ae.id)?{id:ae.id,pos:ae.selectionStart}:null;
+    const n=miles.lines.length+(milesWantBlank()?1:0);
+    let h='';for(let i=0;i<n;i++)h+=milesRowHtml(i);
+    document.getElementById('mRows').innerHTML=h;
+    if(keep){const el=document.getElementById(keep.id);if(el){el.focus();try{if(keep.pos!=null&&el.type==='text')el.setSelectionRange(keep.pos,keep.pos);}catch(e){}}}
+    updateMilesDerived();
   }
-  function milesPreview(){
-    const out=document.getElementById('mPreview');
-    const o=tcNum(document.getElementById('mOdo').value),L=miles.lines;
-    out.classList.remove('bad');
-    if(o===null||o<0){out.textContent='—';return;}
-    if(!L.length){out.textContent='Starting point';return;}
-    const last=L[L.length-1];
-    if(o<last.odo){out.textContent='⚠ lower than last ('+milesFmtOdo(last.odo)+')';out.classList.add('bad');return;}
-    out.textContent='+'+tcFmt(o-last.odo)+' '+miles.unit+' → '+last.state;
-  }
-  function addMiles(){
-    const stEl=document.getElementById('mState'),odoEl=document.getElementById('mOdo');
-    const st=milesClean(stEl.value),o=tcNum(odoEl.value),L=miles.lines;
-    if(st.length!==2){tcToast('Type the 2-letter state code');return;}
-    if(o===null||o<0){tcToast('Enter the odometer reading');return;}
-    if(L.length&&o<L[L.length-1].odo){tcToast('Reading is lower than the last line');return;}
-    const prev=L.length?L[L.length-1]:null;
-    L.push({id:Date.now()+Math.floor(Math.random()*1000),state:st,odo:o});
+  function milesRowInput(i,field,el){
+    const L=miles.lines;
+    if(!L[i]){ if(i!==L.length)return; L.push({id:Date.now()+Math.floor(Math.random()*1000),state:'',odo:null}); }
+    const l=L[i];
+    if(field==='state'){const c=milesClean(el.value);if(el.value!==c)el.value=c;l.state=c;}
+    else{const v=tcNum(el.value);l.odo=(v===null||v<0)?null:v;}
+    // a fully emptied last line goes back to being the blank row
+    while(L.length&&L.length-1===i&&!L[i].state&&L[i].odo===null&&field){L.pop();break;}
     milesSave();
-    stEl.value='';odoEl.value='';
-    milesPreview();renderMiles();
-    tcToast(prev?tcFmt(o-prev.odo)+' '+miles.unit+' → '+prev.state:'Start: '+st+' @ '+milesFmtOdo(o));
+    const rows=document.getElementById('mRows').children.length;
+    if(rows!==L.length+(milesWantBlank()?1:0)) renderMilesRows(); else updateMilesDerived();
   }
-  function deleteMiles(id){
-    miles.lines=miles.lines.filter(l=>l.id!==id);
-    milesSave();renderMiles();milesPreview();
+  function milesKey(e,i,field){
+    if(e.key!=='Enter')return;
+    e.preventDefault();
+    const next=field==='odo'?document.getElementById('mS'+i):document.getElementById('mO'+(i+1));
+    if(next)next.focus();else e.target.blur();
+  }
+  function deleteMiles(i){
+    miles.lines.splice(i,1);milesSave();renderMilesRows();
   }
   function clearMiles(){
     if(!miles.lines.length)return;
     if(!confirm('Delete ALL mileage lines? This cannot be undone.'))return;
-    miles.lines=[];milesSave();renderMiles();milesPreview();
+    miles.lines=[];milesSave();renderMilesRows();
   }
-  // One button: converts every saved reading (and any reading typed but not
-  // added yet) to the other unit and flips the entry unit.
-  function convertMiles(){
-    const toKm=miles.unit==='mi';
-    const f=toKm?KM_PER_MI:1/KM_PER_MI;
-    const r6=n=>Math.round(n*1e6)/1e6;
-    miles.lines.forEach(l=>{l.odo=r6(l.odo*f);});
-    miles.unit=toKm?'km':'mi';
-    const odoEl=document.getElementById('mOdo'),v=tcNum(odoEl.value);
-    if(v!==null) odoEl.value=String(r6(v*f));
-    milesSave();renderMiles();milesPreview();
-  }
-  function initMilesTab(){applyMilesUnitUI();}
-  function renderMiles(){
-    applyMilesUnitUI();
-    const L=miles.lines,u=miles.unit;
-    const {segs,by,total}=milesSegments();
-
-    // Miles by state
+  function updateMilesDerived(){
+    const {segs,by,total,bad}=milesSegments(),u=miles.unit;
+    miles.lines.forEach((l,i)=>{
+      const el=document.getElementById('mD'+i),row=document.getElementById('mr'+i);
+      if(!el)return;
+      const sg=segs[l.id];
+      el.textContent=bad[l.id]?'⚠ low':(sg?'+'+tcFmt(sg.d):'');
+      el.classList.toggle('bad',!!bad[l.id]);
+    });
     const keys=Object.keys(by).sort((a,b)=>by[b]-by[a]);
     const tot=document.getElementById('mTotals');
     if(!keys.length){
-      tot.innerHTML='<div class="empty-note">Add your starting reading, then a line each time you change state.<br>The miles between two readings count for the earlier line\'s state.</div>';
+      tot.innerHTML='<div class="empty-note">Enter odometer + state on each line.<br>The miles between two readings count for the earlier line\'s state.</div>';
     }else{
       const hint=m=>u==='mi'?tcFmt(m*KM_PER_MI)+' km':tcFmt(m/KM_PER_MI)+' mi';
       const row=(label,m,alt,strong)=>`<div class="row${alt?' alt':''}"><div class="st-name"${strong?' style="color:var(--accent)"':''}>${tcEsc(label)}</div><div class="ctrl"><div class="out-wrap"><span class="out green" style="font-size:15px">${tcFmt(m)} ${u}</span><span class="out-hint">${hint(m)}</span></div></div></div>`;
       tot.innerHTML=row('Total driven',total,false,true)+keys.map((k,i)=>row(k,by[k],i%2===0,false)).join('');
     }
-
-    // Lines (chronological, newest at the bottom)
-    const log=document.getElementById('mLog');
-    if(!L.length){
-      log.innerHTML='<div class="empty-note">Lines show up here.</div>';
-    }else{
-      log.innerHTML=L.map((l,i)=>{
-        const d=segs[i];
-        const right=d===null
-          ?`<div class="entry-main" style="color:var(--accent)">current</div><div class="entry-sub">in progress</div>`
-          :`<div class="entry-main">${tcFmt(d)} ${u}</div><div class="entry-sub">driven in ${tcEsc(l.state)}</div>`;
-        return `<div class="row${i%2?' alt':''}"><div class="st-name"><span class="st-code">${tcEsc(l.state)}</span><div class="entry-sub" style="text-align:left">Odometer ${milesFmtOdo(l.odo)} ${u}</div></div><div class="ctrl"><div>${right}</div><button class="del-btn" onclick="deleteMiles(${l.id})">✕</button></div></div>`;
-      }).join('');
-    }
+  }
+  // Switching unit converts every saved reading to the other unit right away.
+  function setMilesUnit(u){
+    if(u===miles.unit)return;
+    const toKm=u==='km';
+    const f=toKm?KM_PER_MI:1/KM_PER_MI;
+    const r6=n=>Math.round(n*1e6)/1e6;
+    miles.lines.forEach(l=>{if(l.odo!==null)l.odo=r6(l.odo*f);});
+    miles.unit=u;
+    milesSave();renderMiles();
+  }
+  function initMilesTab(){}
+  function renderMiles(){
+    document.getElementById('mUnitMi').classList.toggle('active',miles.unit==='mi');
+    document.getElementById('mUnitKm').classList.toggle('active',miles.unit==='km');
+    document.getElementById('mOdoHead').textContent='Odometer '+miles.unit;
+    renderMilesRows();
   }
 
   // ════════════════════════════════════════════════════════
