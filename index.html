@@ -189,22 +189,28 @@
     .entry-main { font-size:13px; font-weight:800; color:var(--text); text-align:right; }
     .entry-sub { font-size:10px; color:var(--muted); text-align:right; margin-top:1px; }
 
-    /* trip stops */
-    .stop { padding:10px 12px 9px; border-bottom:1px solid var(--border); }
-    .stop:last-child { border-bottom:none; }
-    .stop:nth-child(even) { background:var(--row-alt); }
-    .stop-head { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
-    .stop-num { flex:0 0 auto; width:24px; height:24px; border-radius:50%; background:var(--accent); color:#0f1419; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; }
-    .stop-name { flex:1; min-width:0; text-align:left; background:transparent; border:1px dashed rgba(255,255,255,0.18); border-radius:7px; padding:6px 9px; color:var(--text); font-size:14px; font-weight:800; font-family:inherit; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .stop-name .pen { color:var(--muted); font-size:11px; margin-left:4px; }
-    .stop-fields { display:flex; align-items:center; gap:6px; flex-wrap:nowrap; }
-    .stop-fields .time-input { width:92px; flex:0 0 auto; }
-    .stop-fields .odo { margin-left:auto; display:flex; align-items:center; gap:5px; }
-    .stop-fields .odo .num-input { width:104px; }
+    /* trip: one line per location */
     .unit-lbl { font-size:11px; color:var(--muted); font-weight:700; }
-    .stop-leg { margin-top:7px; font-size:11px; color:var(--accent); font-weight:700; min-height:0; }
-    .stop-leg.bad { color:#f05252; }
-    .stop-leg:empty { display:none; }
+    .tg { display:grid; grid-template-columns:minmax(0,1fr) 72px 72px 58px 36px; gap:4px; align-items:center; padding:0 8px; }
+    .tg-head { padding-top:8px; padding-bottom:6px; font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); font-weight:700; border-bottom:1px solid var(--border); }
+    .tg-head span + span { text-align:center; }
+    .tg-row { padding-top:6px; padding-bottom:6px; border-top:1px solid var(--border); }
+    .job { border-bottom:1px solid var(--border); }
+    .job:last-child { border-bottom:none; }
+    .job-head { display:flex; align-items:center; gap:8px; padding:7px 10px 6px; background:var(--bg3); }
+    .job-tag { font-size:10px; font-weight:800; letter-spacing:2px; color:var(--accent); }
+    .job-sub { font-size:9px; color:var(--muted); letter-spacing:.5px; }
+    .job-dist { margin-left:auto; font-size:12px; font-weight:800; color:var(--green); text-align:right; }
+    .job-dist.bad { color:#f05252; }
+    .stop-name { min-width:0; width:100%; text-align:left; background:transparent; border:1px dashed rgba(255,255,255,0.18); border-radius:7px; padding:7px 6px; color:var(--text); font-size:13px; font-weight:800; font-family:inherit; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .tg .loc-input { min-width:0; width:100%; padding:6px 6px; font-size:13px; font-weight:800; }
+    .tin, .oin { width:100%; min-width:0; padding:7px 2px; background:var(--bg3); border:1px solid var(--border); border-radius:7px; color:var(--text); font-size:12px; font-weight:700; text-align:center; outline:none; font-family:inherit; }
+    .oin { -moz-appearance:textfield; }
+    .oin::-webkit-outer-spin-button, .oin::-webkit-inner-spin-button { -webkit-appearance:none; }
+    .tin:focus, .oin:focus { border-color:var(--accent); }
+    .now-btn { width:100%; padding:8px 0; border-radius:7px; border:1px solid var(--border); background:var(--bg3); color:var(--accent); font-size:10px; font-weight:800; cursor:pointer; font-family:inherit; }
+    .now-btn:active { background:rgba(240,165,0,0.18); }
+    .trip-note { padding:9px 12px; font-size:10px; color:var(--muted); line-height:1.55; border-top:1px solid var(--border); }
 
     #tcToast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:#1c2733; border:1px solid var(--accent); color:var(--text); padding:10px 16px; border-radius:10px; font-size:12px; font-weight:700; opacity:0; pointer-events:none; transition:opacity .2s; z-index:50; max-width:90vw; text-align:center; }
     #tcToast.show { opacity:1; }
@@ -250,7 +256,7 @@
 <div class="tab-bar">
   <button class="tab active" onclick="switchTab('calc')">⚗️ Calc</button>
   <button class="tab" onclick="switchTab('flow')">🌊 Flow</button>
-  <button class="tab" onclick="switchTab('miles')">🛣️ Miles</button>
+  <button class="tab" onclick="switchTab('miles')">🛣️ IFTA</button>
   <button class="tab" onclick="switchTab('trip')">🚚 Trip</button>
   <button class="tab" onclick="switchTab('locs')">📍 Locations</button>
   <button class="tab" onclick="switchTab('settings')">⚙️</button>
@@ -462,7 +468,7 @@
 <!-- ═══════════════════════════════ -->
 <div class="tab-panel" id="tab-miles">
   <div class="sheet">
-    <div class="sec-head blue">Mileage Log</div>
+    <div class="sec-head blue">IFTA Mileage</div>
     <div class="row">
       <div class="lbl">Units<small>what you enter</small></div>
       <div class="ctrl">
@@ -472,7 +478,7 @@
     </div>
     <div class="row alt">
       <div class="lbl">State<small>2 letters</small></div>
-      <div class="ctrl"><input type="text" class="num-input" id="mState" maxlength="2" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="MT" style="width:84px;text-transform:uppercase;" oninput="milesStateInput()" /></div>
+      <div class="ctrl"><input type="text" class="num-input" id="mState" maxlength="2" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="XX" style="width:84px;text-transform:uppercase;" oninput="milesStateInput()" /></div>
     </div>
     <div class="row">
       <div class="lbl">Odometer<small>reading</small></div>
@@ -525,19 +531,14 @@
   </div>
 
   <div class="sheet gap-top">
-    <div class="sec-head pink">Stops <span style="color:var(--muted);letter-spacing:1px;text-transform:none;font-size:9px;">tap a name to rename</span></div>
+    <div class="sec-head pink">Locations <span style="color:var(--muted);letter-spacing:1px;text-transform:none;font-size:9px;">tap a name to rename</span></div>
+    <div class="tg tg-head"><span>Location</span><span>Arrive</span><span>Depart</span><span id="tOdoHead">Odo</span><span></span></div>
     <div id="tripStops"></div>
-  </div>
-
-  <div class="sheet gap-top">
-    <div class="sec-head green">Trip Totals</div>
-    <div class="row"><div class="lbl">Distance</div><div class="ctrl"><span class="out green" id="tSumDist">—</span></div></div>
-    <div class="row alt"><div class="lbl">Drive time</div><div class="ctrl"><span class="out green" id="tSumTime">—</span></div></div>
-    <div class="row"><div class="lbl">Avg speed</div><div class="ctrl"><span class="out green" id="tSumSpeed">—</span></div></div>
+    <div class="trip-note">Each job is a pickup then a drop-off. Job distance = drop odometer − pickup odometer (read at pickup arrival and at drop departure). Odometer is optional. "Now" stamps Arrive first, then Depart.</div>
   </div>
 
   <div class="btn-pair">
-    <button class="block-btn" onclick="tripAddStop()">+ Add Stop</button>
+    <button class="block-btn" onclick="tripAddJob()">+ Add Job</button>
     <button class="block-btn green" onclick="tripSaveImage()">🖼 Save Image</button>
   </div>
   <button class="reset-btn" onclick="tripClear()">↺ Clear Trip</button>
@@ -1387,7 +1388,7 @@
   function addMiles(){
     const stEl=document.getElementById('mState'),odoEl=document.getElementById('mOdo');
     const st=milesClean(stEl.value),o=tcNum(odoEl.value),L=miles.lines;
-    if(st.length!==2){tcToast('Type the 2-letter state, e.g. MT');return;}
+    if(st.length!==2){tcToast('Type the 2-letter state code');return;}
     if(o===null||o<0){tcToast('Enter the odometer reading');return;}
     if(L.length&&o<L[L.length-1].odo){tcToast('Reading is lower than the last line');return;}
     const prev=L.length?L[L.length-1]:null;
@@ -1451,39 +1452,39 @@
   }
 
   // ════════════════════════════════════════════════════════
-  // TRIP TAB — location → location log, timestamps, odometer, image export
+  // TRIP TAB — one line per location: name, arrive, depart, odometer.
+  // Locations pair up into jobs (1st = pickup, 2nd = drop-off).
+  // Job distance = drop odometer − pickup odometer (odometer is optional).
+  // Permanent key LS_TRIP; versioned (v2) and migrated in place.
   // ════════════════════════════════════════════════════════
-  function tripDefault(){
-    return {v:1,name:'',date:tcToday(),unit:'mi',nextId:3,
-      stops:[{id:1,name:null,time:'',odo:''},{id:2,name:null,time:'',odo:''}]};
-  }
+  function tripBlank(id){return {id,name:null,arr:'',dep:'',odo:''};}
+  function tripDefault(){return {v:2,name:'',date:tcToday(),unit:'mi',nextId:3,stops:[tripBlank(1),tripBlank(2)]};}
   let trip=tcLoad(LS_TRIP,tripDefault);
   (function normalizeTrip(){
-    if(!Array.isArray(trip.stops)||trip.stops.length<2){const d=tripDefault();trip.stops=d.stops;trip.nextId=d.nextId;}
-    trip.stops=trip.stops.map((s,i)=>({id:s.id||(i+1),name:s.name||null,time:s.time||'',odo:s.odo==null?'':String(s.odo)}));
-    const maxId=Math.max(...trip.stops.map(s=>s.id));
-    if(!trip.nextId||trip.nextId<=maxId) trip.nextId=maxId+1;
+    const wasOld=(trip.v||1)<2;
+    let stops=Array.isArray(trip.stops)?trip.stops.filter(s=>s&&typeof s==='object'):[];
+    // v1 had a single `time` per stop → it becomes the arrival time
+    stops=stops.map((s,i)=>({id:s.id||(i+1),name:s.name||null,arr:s.arr!=null?String(s.arr):(s.time?String(s.time):''),dep:s.dep?String(s.dep):'',odo:s.odo==null?'':String(s.odo)}));
+    let maxId=stops.reduce((m,s)=>Math.max(m,s.id),0);
+    while(stops.length<2) stops.push(tripBlank(++maxId));
+    if(stops.length%2) stops.push(tripBlank(++maxId));   // keep pickup/drop pairs complete
+    trip.stops=stops;
+    trip.nextId=Math.max(trip.nextId||0,maxId+1);
     if(trip.unit!=='mi'&&trip.unit!=='km') trip.unit='mi';
     if(!trip.date) trip.date=tcToday();
+    if(typeof trip.name!=='string') trip.name='';
+    trip.v=2;
+    if(wasOld) tcSave(LS_TRIP,trip);
   })();
   let tripEditing=-1;
 
   function tripSave(){tcSave(LS_TRIP,trip);}
   function tripStopName(i){return trip.stops[i].name||('Location '+(i+1));}
-  function tripParseTime(t){
-    if(!t)return null;
-    const m=/^(\d{1,2}):(\d{2})$/.exec(t);
-    return m?(+m[1])*60+(+m[2]):null;
-  }
-  function tripFmtDur(mins){
-    const h=Math.floor(mins/60),m=Math.round(mins%60);
-    return h>0?h+'h '+tcPad(m)+'m':m+'m';
-  }
   function tripFmt12(t){
-    const p=tripParseTime(t);if(p===null)return '';
-    let h=Math.floor(p/60);const m=p%60;
-    const ap=h>=12?'PM':'AM';h=h%12;if(h===0)h=12;
-    return h+':'+tcPad(m)+' '+ap;
+    const m=/^(\d{1,2}):(\d{2})$/.exec(t||'');
+    if(!m)return '';
+    let h=+m[1];const mm=m[2],ap=h>=12?'PM':'AM';h=h%12;if(h===0)h=12;
+    return h+':'+mm+' '+ap;
   }
   function tripDistText(d){
     // d is in the trip's odometer unit; show the other unit alongside
@@ -1491,23 +1492,15 @@
     const other=u==='mi'?tcFmt(d*KM_PER_MI)+' km':tcFmt(d/KM_PER_MI)+' mi';
     return tcFmt(d)+' '+u+' ('+other+')';
   }
-  function tripCompute(){
-    const legs=[];let pO=null,pT=null,totD=0,totM=0,haveD=false,haveM=false;
-    trip.stops.forEach(s=>{
-      const o=tcNum(s.odo),t=tripParseTime(s.time);
-      let dist=null,mins=null,bad=false;
-      if(o!==null){
-        if(pO===null){pO=o;}
-        else if(o>=pO){dist=o-pO;totD+=dist;haveD=true;pO=o;}
-        else{bad=true;}
-      }
-      if(t!==null){
-        if(pT!==null){let d=t-pT;if(d<0)d+=1440;mins=d;totM+=d;haveM=true;}
-        pT=t;
-      }
-      legs.push({dist,mins,bad});
-    });
-    return {legs,totD:haveD?totD:null,totM:haveM?totM:null};
+  function tripJobs(){
+    const jobs=[];
+    for(let j=0;j<trip.stops.length/2;j++){
+      const a=tcNum(trip.stops[2*j].odo),b=tcNum(trip.stops[2*j+1].odo);
+      let dist=null,bad=false;
+      if(a!==null&&b!==null){if(b>=a)dist=b-a;else bad=true;}
+      jobs.push({dist,bad});
+    }
+    return jobs;
   }
 
   function renderTrip(){
@@ -1517,41 +1510,35 @@
     document.getElementById('tUnitKm').classList.toggle('active',trip.unit==='km');
     renderTripStops();
   }
+  function tripRowHtml(i){
+    const s=trip.stops[i];
+    const nameCtl=(tripEditing===i)
+      ?`<input id="tripNameEdit" class="loc-input" maxlength="40" value="${tcEsc(s.name||'')}" placeholder="Location ${i+1}" onblur="tripNameCommit(${i},this.value,false)" onkeydown="if(event.key==='Enter'){this.blur();}else if(event.key==='Escape'){tripNameCommit(${i},this.value,true);}">`
+      :`<button class="stop-name" onclick="tripRename(${i})">${tcEsc(tripStopName(i))}</button>`;
+    return `<div class="tg tg-row">${nameCtl}
+      <input type="time" class="tin" id="stA${i}" value="${tcEsc(s.arr)}" aria-label="Arrive" oninput="tripField(${i},'arr',this.value)">
+      <input type="time" class="tin" id="stD${i}" value="${tcEsc(s.dep)}" aria-label="Depart" oninput="tripField(${i},'dep',this.value)">
+      <input type="number" inputmode="decimal" step="any" min="0" class="oin" id="stO${i}" value="${tcEsc(s.odo)}" placeholder="odo" aria-label="Odometer" oninput="tripField(${i},'odo',this.value)">
+      <button class="now-btn" onclick="tripStamp(${i})">Now</button>
+    </div>`;
+  }
   function renderTripStops(){
-    const canRemove=trip.stops.length>2;
-    document.getElementById('tripStops').innerHTML=trip.stops.map((s,i)=>{
-      const nameCtl=(tripEditing===i)
-        ?`<input id="tripNameEdit" class="loc-input" style="flex:1;min-width:0;font-weight:800;" maxlength="40" value="${tcEsc(s.name||'')}" placeholder="Location ${i+1}" onblur="tripNameCommit(${i},this.value,false)" onkeydown="if(event.key==='Enter'){this.blur();}else if(event.key==='Escape'){tripNameCommit(${i},this.value,true);}">`
-        :`<button class="stop-name" onclick="tripRename(${i})">${tcEsc(tripStopName(i))}<span class="pen">✎</span></button>`;
-      return `<div class="stop">
-        <div class="stop-head"><span class="stop-num">${i+1}</span>${nameCtl}${canRemove?`<button class="del-btn" onclick="tripRemove(${i})">✕</button>`:''}</div>
-        <div class="stop-fields">
-          <input type="time" class="time-input" id="stT${i}" value="${tcEsc(s.time)}" oninput="tripField(${i},'time',this.value)">
-          <button class="stamp-btn" onclick="tripStamp(${i})">Now</button>
-          <div class="odo"><input type="number" inputmode="decimal" step="any" min="0" class="num-input" id="stO${i}" value="${tcEsc(s.odo)}" placeholder="odometer" oninput="tripField(${i},'odo',this.value)"><span class="unit-lbl">${trip.unit}</span></div>
-        </div>
-        <div class="stop-leg" id="stL${i}"></div>
-      </div>`;
-    }).join('');
+    const jobs=trip.stops.length/2;
+    document.getElementById('tOdoHead').textContent='Odo '+trip.unit;
+    let html='';
+    for(let j=0;j<jobs;j++){
+      html+=`<div class="job"><div class="job-head"><span class="job-tag">JOB ${j+1}</span><span class="job-sub">pickup → drop</span><span class="job-dist" id="jD${j}"></span>${jobs>1?`<button class="del-btn" onclick="tripRemoveJob(${j})">✕</button>`:''}</div>${tripRowHtml(2*j)}${tripRowHtml(2*j+1)}</div>`;
+    }
+    document.getElementById('tripStops').innerHTML=html;
     updateTripDerived();
   }
   function updateTripDerived(){
-    const c=tripCompute();
-    c.legs.forEach((l,i)=>{
-      const el=document.getElementById('stL'+i);
+    tripJobs().forEach((jb,j)=>{
+      const el=document.getElementById('jD'+j);
       if(!el)return;
-      if(i===0){el.textContent='';el.classList.remove('bad');return;}
-      if(l.bad){el.textContent='⚠ odometer is lower than the previous reading';el.classList.add('bad');return;}
-      el.classList.remove('bad');
-      const parts=[];
-      if(l.dist!==null)parts.push(tripDistText(l.dist));
-      if(l.mins!==null)parts.push(tripFmtDur(l.mins));
-      el.textContent=parts.length?'↳ '+parts.join(' · '):'';
+      el.classList.toggle('bad',jb.bad);
+      el.textContent=jb.bad?'⚠ check odometer':(jb.dist!==null?tripDistText(jb.dist):'');
     });
-    document.getElementById('tSumDist').textContent=c.totD!==null?tripDistText(c.totD):'—';
-    document.getElementById('tSumTime').textContent=c.totM!==null?tripFmtDur(c.totM):'—';
-    const hrs=c.totM?c.totM/60:0;
-    document.getElementById('tSumSpeed').textContent=(c.totD!==null&&hrs>0)?tcFmt(c.totD/hrs)+' '+trip.unit+'/h':'—';
   }
 
   function tripMetaInput(){
@@ -1566,11 +1553,13 @@
     renderTripStops();
   }
   function tripField(i,key,val){trip.stops[i][key]=val;tripSave();updateTripDerived();}
+  // "Now": fills Arrive first, then Depart (edit a field by hand to change a time)
   function tripStamp(i){
-    const d=new Date(),t=tcPad(d.getHours())+':'+tcPad(d.getMinutes());
-    trip.stops[i].time=t;
-    document.getElementById('stT'+i).value=t;
-    tripSave();updateTripDerived();
+    const d=new Date(),t=tcPad(d.getHours())+':'+tcPad(d.getMinutes()),s=trip.stops[i];
+    if(!s.arr){s.arr=t;document.getElementById('stA'+i).value=t;}
+    else if(!s.dep){s.dep=t;document.getElementById('stD'+i).value=t;}
+    else{tcToast('Arrive and Depart are already set — edit a time to change it');return;}
+    tripSave();
   }
   function tripRename(i){
     tripEditing=i;renderTripStops();
@@ -1583,16 +1572,16 @@
     if(!cancel){trip.stops[i].name=val.trim()||null;tripSave();}
     renderTripStops();
   }
-  function tripAddStop(){
-    trip.stops.push({id:trip.nextId++,name:null,time:'',odo:''});
+  function tripAddJob(){
+    trip.stops.push(tripBlank(trip.nextId++),tripBlank(trip.nextId++));
     tripSave();renderTripStops();
-    tcToast('Added '+tripStopName(trip.stops.length-1));
+    tcToast('Added Job '+(trip.stops.length/2));
   }
-  function tripRemove(i){
+  function tripRemoveJob(j){
     if(trip.stops.length<=2)return;
-    const s=trip.stops[i];
-    if((s.time||s.odo||s.name)&&!confirm('Remove '+tripStopName(i)+'?'))return;
-    trip.stops.splice(i,1);
+    const pair=[trip.stops[2*j],trip.stops[2*j+1]];
+    if(pair.some(s=>s.arr||s.dep||s.odo||s.name)&&!confirm('Remove Job '+(j+1)+' (both locations)?'))return;
+    trip.stops.splice(2*j,2);
     tripEditing=-1;
     tripSave();renderTripStops();
   }
@@ -1603,7 +1592,7 @@
     tripSave();renderTrip();
   }
 
-  // ── Save trip as PNG image ──
+  // ── Save trip as PNG image (table: one line per location) ──
   function tripFitText(ctx,text,maxW){
     if(ctx.measureText(text).width<=maxW)return text;
     let t=text;
@@ -1611,86 +1600,72 @@
     return t+'…';
   }
   function tripBuildCanvas(){
-    const c=tripCompute();
-    const n=trip.stops.length;
-    const W=1000,S=2,rowH=116,legH=66,headH=220;
-    const totals=[];
-    if(c.totD!==null)totals.push(['TOTAL DISTANCE',tripDistText(c.totD)]);
-    if(c.totM!==null)totals.push(['DRIVE TIME',tripFmtDur(c.totM)]);
-    if(c.totD!==null&&c.totM>0)totals.push(['AVG SPEED',tcFmt(c.totD/(c.totM/60))+' '+trip.unit+'/h']);
-    const footH=(totals.length?40+totals.length*66:0)+110;
-    const H=headH+n*rowH+(n-1)*legH+footH;
+    const jobs=tripJobs(),nJobs=jobs.length;
+    const useOdo=trip.stops.some(s=>tcNum(s.odo)!==null);
+    const W=1000,S=2,headH=268,bandH=58,rowH=74,gap=20,footH=96;
+    const H=headH+nJobs*(bandH+2*rowH+gap)+footH;
     const cv=document.createElement('canvas');
     cv.width=W*S;cv.height=H*S;
     const x=cv.getContext('2d');
     x.scale(S,S);
     const FONT='"Segoe UI",Roboto,Arial,sans-serif';
+    const L=50,R=W-50;
+    const arrR=useOdo?610:740,depR=useOdo?780:R,odoR=R;
+    const nameMax=(arrR-160)-L-10;
+
     x.fillStyle='#ffffff';x.fillRect(0,0,W,H);
     x.fillStyle='#f0a500';x.fillRect(0,0,W,16);
     x.textBaseline='alphabetic';x.textAlign='left';
 
     // header
-    x.fillStyle='#b27700';x.font='700 26px '+FONT;x.fillText('TRIP LOG',50,78);
+    x.fillStyle='#b27700';x.font='700 26px '+FONT;x.fillText('TRIP LOG',L,78);
     x.fillStyle='#111827';x.font='800 54px '+FONT;
-    x.fillText(tripFitText(x,(trip.name||'').trim()||'Load Trip',W-100),50,142);
+    x.fillText(tripFitText(x,(trip.name||'').trim()||'Load Trip',W-100),L,142);
     x.fillStyle='#6b7280';x.font='600 28px '+FONT;
     let dateLine='';
     if(trip.date){const p=trip.date.split('-').map(Number);if(p.length===3&&!p.some(isNaN))dateLine=new Date(p[0],p[1]-1,p[2]).toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'});}
-    x.fillText(dateLine,50,188);
+    x.fillText(dateLine,L,188);
 
-    // stops
-    const CX=84;
-    for(let i=0;i<n;i++){
-      const s=trip.stops[i],top=headH+i*(rowH+legH);
-      if(i<n-1){
-        x.strokeStyle='#f0a500';x.lineWidth=5;x.beginPath();
-        x.moveTo(CX,top+40+28);x.lineTo(CX,top+rowH+legH+40-28);x.stroke();
-      }
-      x.fillStyle='#f0a500';x.beginPath();x.arc(CX,top+40,28,0,Math.PI*2);x.fill();
-      x.fillStyle='#111827';x.font='800 30px '+FONT;x.textAlign='center';
-      x.fillText(String(i+1),CX,top+51);
+    // column labels
+    x.fillStyle='#9ca3af';x.font='700 22px '+FONT;
+    x.textAlign='left';x.fillText('LOCATION',L,246);
+    x.textAlign='right';
+    x.fillText('ARRIVE',arrR,246);x.fillText('DEPART',depR,246);
+    if(useOdo)x.fillText('ODO '+trip.unit.toUpperCase(),odoR,246);
+    x.strokeStyle='#e5e7eb';x.lineWidth=2;x.beginPath();x.moveTo(L,258);x.lineTo(R,258);x.stroke();
 
-      x.textAlign='right';
-      const tm=tripFmt12(s.time);
-      x.font='800 38px '+FONT;
-      const timeW=tm?x.measureText(tm).width:0;
-      if(tm){x.fillStyle='#111827';x.fillText(tm,W-50,top+52);}
+    let y=headH;
+    for(let j=0;j<nJobs;j++){
+      // job band with that job's distance
+      x.fillStyle='#f3f4f6';x.fillRect(L,y,R-L,bandH);
+      x.textAlign='left';x.fillStyle='#b27700';x.font='800 24px '+FONT;x.fillText('JOB '+(j+1),L+16,y+38);
+      const jb=jobs[j];
+      let dt='',bad=false;
+      if(jb.bad){dt='check odometer';bad=true;}
+      else if(jb.dist!==null)dt=tripDistText(jb.dist);
+      if(dt){x.textAlign='right';x.fillStyle=bad?'#dc2626':'#111827';x.font='800 28px '+FONT;x.fillText(dt,R-16,y+39);}
+      y+=bandH;
 
-      x.textAlign='left';
-      x.fillStyle='#111827';x.font='800 40px '+FONT;
-      x.fillText(tripFitText(x,tripStopName(i),W-150-50-timeW-24),140,top+52);
-      const o=tcNum(s.odo);
-      if(o!==null){
-        x.fillStyle='#6b7280';x.font='600 26px '+FONT;
-        x.fillText('Odometer '+o.toLocaleString(undefined,{maximumFractionDigits:1})+' '+trip.unit,140,top+92);
-      }
-      if(i>0){
-        // leg text sits in the gap above this stop
-        const l=c.legs[i],parts=[];
-        if(l.bad)parts.push('check odometer');
-        if(l.dist!==null)parts.push(tripDistText(l.dist));
-        if(l.mins!==null)parts.push(tripFmtDur(l.mins));
-        if(parts.length){
-          x.fillStyle=l.bad?'#dc2626':'#b27700';x.font='700 28px '+FONT;
-          x.fillText('↓ '+parts.join('  ·  '),140,top-legH+42);
+      for(let k=0;k<2;k++){
+        const i=2*j+k,s=trip.stops[i];
+        if(k===1){x.strokeStyle='#eceef1';x.lineWidth=2;x.beginPath();x.moveTo(L,y);x.lineTo(R,y);x.stroke();}
+        x.textAlign='left';x.fillStyle='#111827';x.font='800 32px '+FONT;
+        x.fillText(tripFitText(x,tripStopName(i),nameMax),L+4,y+49);
+        x.textAlign='right';x.font='700 30px '+FONT;
+        const a=tripFmt12(s.arr),d=tripFmt12(s.dep);
+        x.fillStyle=a?'#111827':'#c4c8ce';x.fillText(a||'—',arrR,y+49);
+        x.fillStyle=d?'#111827':'#c4c8ce';x.fillText(d||'—',depR,y+49);
+        if(useOdo){
+          const o=tcNum(s.odo);
+          x.fillStyle=o!==null?'#4b5563':'#c4c8ce';x.font='600 27px '+FONT;
+          x.fillText(o!==null?o.toLocaleString(undefined,{maximumFractionDigits:1}):'—',odoR,y+48);
         }
+        y+=rowH;
       }
-    }
-
-    // totals
-    let y=headH+n*rowH+(n-1)*legH+20;
-    if(totals.length){
-      x.strokeStyle='#e5e7eb';x.lineWidth=2;x.beginPath();x.moveTo(50,y);x.lineTo(W-50,y);x.stroke();
-      y+=26;
-      totals.forEach(t=>{
-        y+=40;
-        x.textAlign='left';x.fillStyle='#6b7280';x.font='700 24px '+FONT;x.fillText(t[0],50,y);
-        x.textAlign='right';x.fillStyle='#111827';x.font='800 36px '+FONT;x.fillText(t[1],W-50,y+2);
-        y+=26;
-      });
+      y+=gap;
     }
     x.textAlign='center';x.fillStyle='#9ca3af';x.font='600 22px '+FONT;
-    x.fillText('Tank Calc · saved '+new Date().toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}),W/2,H-34);
+    x.fillText('Tank Calc · saved '+new Date().toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}),W/2,H-36);
     return cv;
   }
   function tripSaveImage(){
