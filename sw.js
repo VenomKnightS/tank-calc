@@ -2,7 +2,7 @@
 // BUMP THIS VERSION NUMBER EVERY TIME YOU UPDATE
 // The app will detect the change and refresh the cache automatically
 // ─────────────────────────────────────────────
-const CACHE_VERSION = 'tank-calc-v7';
+const CACHE_VERSION = 'tank-calc-v18';
 const FILES_TO_CACHE = [
   '/tank-calc/',
   '/tank-calc/index.html',
