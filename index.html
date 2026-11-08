@@ -218,6 +218,38 @@
     .ms { text-transform:uppercase; font-size:15px; letter-spacing:1px; }
     .mdelta { font-size:12px; font-weight:800; color:var(--green); text-align:right; white-space:nowrap; }
     .mdelta.bad { color:#f05252; }
+    .prow { display:grid; grid-template-columns:62px minmax(0,1fr) minmax(0,1fr) 46px 32px; gap:5px; align-items:center; padding:6px 8px; border-top:1px solid var(--border); }
+    .phead { font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); font-weight:700; background:var(--bg3); }
+    .pday { font-size:12px; font-weight:800; color:var(--text); }
+    .phrs { font-size:12px; font-weight:800; color:var(--green); text-align:right; }
+    .pweek { border-top:1px solid var(--border); }
+    .pweek:first-child { border-top:none; }
+    .pweek summary { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:12px; cursor:pointer; list-style:none; font-size:13px; font-weight:800; color:var(--text); }
+    .pweek summary::-webkit-details-marker { display:none; }
+    .pweek summary::before { content:'▸'; color:var(--accent); margin-right:6px; }
+    .pweek[open] summary::before { content:'▾'; }
+    .pw-name { flex:1; } .pw-name em { font-style:normal; font-size:10px; color:var(--accent); margin-left:6px; letter-spacing:1px; text-transform:uppercase; }
+    .pw-tot { font-size:12px; color:var(--green); font-weight:800; }
+    .flowd { border-top:1px dashed var(--border); }
+    .flowd summary { padding:6px 12px; font-size:11px; font-weight:700; color:var(--accent); cursor:pointer; }
+    .flowd summary span { color:var(--green); }
+    #printHost { display:none; }
+    @media print {
+      html, body { background:#fff !important; color:#000 !important; }
+      body > *:not(#printHost) { display:none !important; }
+      #printHost { display:block !important; color:#000; background:#fff; font-family:Arial,Helvetica,sans-serif; font-size:11px; padding:8px; }
+      #printHost h1 { font-size:20px; margin:0 0 2px; }
+      #printHost h2 { font-size:13px; margin:14px 0 4px; border-bottom:2px solid #000; }
+      #printHost h3 { font-size:12px; margin:10px 0 3px; }
+      #printHost .pr-meta { color:#333; margin-bottom:6px; }
+      #printHost table { border-collapse:collapse; width:100%; margin-bottom:6px; page-break-inside:avoid; }
+      #printHost th, #printHost td { border:1px solid #888; padding:3px 5px; text-align:left; }
+      #printHost th { background:#eee; }
+      #printHost .pr-foot { margin-top:12px; color:#555; font-size:9px; }
+    }
+    .mod-row { display:flex; align-items:center; gap:12px; padding:13px 14px; font-size:14px; font-weight:700; color:var(--text); cursor:pointer; }
+    .mod-row.alt { background:var(--row-alt); }
+    .mod-row input { width:20px; height:20px; accent-color:var(--accent); flex:none; }
     #tcToast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:#1c2733; border:1px solid var(--accent); color:var(--text); padding:10px 16px; border-radius:10px; font-size:12px; font-weight:700; opacity:0; pointer-events:none; transition:opacity .2s; z-index:50; max-width:90vw; text-align:center; }
     #tcToast.show { opacity:1; }
 
@@ -226,6 +258,7 @@
     .conv-btn { padding:7px 11px; border-radius:8px; border:1px solid var(--blue); background:transparent; color:var(--blue); font-size:11px; font-weight:800; cursor:pointer; font-family:inherit; white-space:nowrap; }
     .conv-btn:active { background:rgba(122,179,240,0.15); }
     .st-code { font-size:16px; font-weight:800; color:var(--accent); letter-spacing:1px; }
+    .fin { width:100%; max-width:215px; min-width:0; }
   </style>
 </head>
 <body>
@@ -264,6 +297,8 @@
   <button class="tab" onclick="switchTab('flow')">🌊 Flow</button>
   <button class="tab" onclick="switchTab('miles')">🛣️ IFTA</button>
   <button class="tab" onclick="switchTab('trip')">🚚 Trip</button>
+  <button class="tab" onclick="switchTab('shift')">📋 Shift</button>
+  <button class="tab" onclick="switchTab('pay')">🗓️ Pay</button>
   <button class="tab" onclick="switchTab('locs')">📍 Locations</button>
   <button class="tab" onclick="switchTab('settings')">⚙️</button>
 </div>
@@ -438,20 +473,40 @@
 <!-- ═══════════════════════════════ -->
 <div class="tab-panel" id="tab-flow">
 <div class="sheet">
-  <div class="sec-head pink">Flow Rate</div>
+  <div class="sec-head pink">Truck <button class="clr-btn" onclick="flowClear()">Clear</button></div>
   <div class="row">
+    <div class="lbl">Truck</div>
+    <div class="ctrl"><input class="loc-input fin" id="fTruck" type="text" maxlength="30" placeholder="Truck name / #" oninput="flowSaveIds()" /></div>
+  </div>
+  <div class="row alt">
+    <div class="lbl">Trailer ID</div>
+    <div class="ctrl"><input class="loc-input fin" id="fTrailer" type="text" maxlength="30" placeholder="Trailer ID" oninput="flowSaveIds()" /></div>
+  </div>
+</div>
+
+<div class="sheet gap-top">
+  <div class="sec-head pink">Load Flow Rate</div>
+  <div class="row">
+    <div class="lbl">Location<small>optional</small></div>
+    <div class="ctrl"><input class="loc-input fin" id="fLoadName" type="text" maxlength="40" placeholder="Load location name" /></div>
+  </div>
+  <div class="row alt">
     <div class="lbl">Start Time</div>
     <div class="ctrl" style="gap:6px;">
       <input type="time" class="time-input" id="startTime" oninput="calcFlow()" />
       <button class="stamp-btn" onclick="stampTime('startTime')">Now</button>
     </div>
   </div>
-  <div class="row alt">
+  <div class="row">
     <div class="lbl">End Time</div>
     <div class="ctrl" style="gap:6px;">
       <input type="time" class="time-input" id="endTime" oninput="calcFlow()" />
       <button class="stamp-btn" onclick="stampTime('endTime')">Now</button>
     </div>
+  </div>
+  <div class="row alt">
+    <div class="lbl">BBL</div>
+    <div class="ctrl"><span class="out" style="color:var(--pink);font-size:16px;" id="r-fbbl">—</span></div>
   </div>
   <div class="row">
     <div class="lbl">Duration</div>
@@ -464,6 +519,44 @@
   <div class="row">
     <div class="lbl">Gal / min</div>
     <div class="ctrl"><span class="out" style="color:var(--pink);font-size:16px;" id="r-gpm">—</span></div>
+  </div>
+</div>
+
+<div class="sheet gap-top">
+  <div class="sec-head pink">Unload Flow Rate</div>
+  <div class="row">
+    <div class="lbl">Location<small>optional</small></div>
+    <div class="ctrl"><input class="loc-input fin" id="fUnloadName" type="text" maxlength="40" placeholder="Unload location name" /></div>
+  </div>
+  <div class="row alt">
+    <div class="lbl">Start Time</div>
+    <div class="ctrl" style="gap:6px;">
+      <input type="time" class="time-input" id="uStart" oninput="calcFlow()" />
+      <button class="stamp-btn" onclick="stampTime('uStart')">Now</button>
+    </div>
+  </div>
+  <div class="row">
+    <div class="lbl">End Time</div>
+    <div class="ctrl" style="gap:6px;">
+      <input type="time" class="time-input" id="uEnd" oninput="calcFlow()" />
+      <button class="stamp-btn" onclick="stampTime('uEnd')">Now</button>
+    </div>
+  </div>
+  <div class="row alt">
+    <div class="lbl">BBL</div>
+    <div class="ctrl"><span class="out" style="color:var(--pink);font-size:16px;" id="u-fbbl">—</span></div>
+  </div>
+  <div class="row">
+    <div class="lbl">Duration</div>
+    <div class="ctrl"><span class="out" style="color:var(--pink);font-size:16px;" id="u-duration">—</span></div>
+  </div>
+  <div class="row alt">
+    <div class="lbl">BBL / min</div>
+    <div class="ctrl"><span class="out" style="color:var(--pink);font-size:16px;" id="u-bblmin">—</span></div>
+  </div>
+  <div class="row">
+    <div class="lbl">Gal / min</div>
+    <div class="ctrl"><span class="out" style="color:var(--pink);font-size:16px;" id="u-gpm">—</span></div>
   </div>
 </div>
 <div style="margin-top:8px;font-size:10px;color:var(--muted);text-align:center;">BBL count pulled from Calculator tab</div>
@@ -518,6 +611,12 @@
         </div>
       </div>
     </div>
+    <div class="row">
+      <div class="lbl">Now button clock<small>time zone to stamp</small></div>
+      <div class="ctrl"><select class="sel" id="tripTz" onchange="setTripTz(this.value)">
+        <option value="">My phone</option><option value="America/Chicago">Central (ND / TX)</option><option value="America/Denver">Mountain (MT)</option><option value="America/Los_Angeles">Pacific</option><option value="America/New_York">Eastern</option>
+      </select></div>
+    </div>
     <div class="row alt">
       <div class="lbl">Odometer unit</div>
       <div class="ctrl">
@@ -545,6 +644,104 @@
 </div>
 
 <div id="tcToast"></div>
+
+<!-- ═══════════════════════════════ -->
+<!-- SHIFT TAB — IFTA + trips + flow per load, printable report -->
+<!-- ═══════════════════════════════ -->
+<div class="tab-panel" id="tab-shift">
+  <div class="sheet">
+    <div class="sec-head green">Shift Log <button class="clr-btn" onclick="shClear()">Clear</button></div>
+    <div class="row">
+      <div class="lbl">Date</div>
+      <div class="ctrl"><input type="date" class="time-input" id="shDate" style="width:150px;" oninput="shTop('date',this.value)" /></div>
+    </div>
+    <div class="row alt">
+      <div class="lbl">Units</div>
+      <div class="ctrl"><div class="tog-group">
+        <button class="tog active" id="shUnitMi" onclick="shSetUnit('mi')">MI</button>
+        <button class="tog" id="shUnitKm" onclick="shSetUnit('km')">KM</button>
+      </div></div>
+    </div>
+    <div class="mrow mhead"><span id="shStartHead">Start odometer</span><span>State</span><span></span><span></span></div>
+    <div class="mrow">
+      <input type="number" inputmode="decimal" step="any" min="0" class="oin mo" id="shStartOdo" placeholder="Start of shift" oninput="shTop('startOdo',this.value)" />
+      <input type="text" class="tin ms" id="shStartState" maxlength="2" placeholder="ST" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" oninput="shTopState(this)" />
+      <span></span><span></span>
+    </div>
+    <div class="trip-note">Enter your starting odometer and state. Loads and drops use the last state you entered — tap <b>+ Add State</b> when you cross a line.</div>
+  </div>
+
+  <div class="sheet gap-top">
+    <div class="sec-head pink">Run</div>
+    <div id="shItems"></div>
+    <div class="btn-pair" style="padding:10px 12px;margin-top:0;">
+      <button class="block-btn green" onclick="shAddState()">+ Add State</button>
+      <button class="block-btn" onclick="shAddLoad()">+ Add Load</button>
+    </div>
+  </div>
+
+  <div class="sheet gap-top">
+    <div class="sec-head gold">End of Shift</div>
+    <div class="mrow mhead"><span id="shEndHead">End odometer</span><span>State</span><span></span><span></span></div>
+    <div class="mrow">
+      <input type="number" inputmode="decimal" step="any" min="0" class="oin mo" id="shEndOdo" placeholder="End of shift" oninput="shTop('endOdo',this.value)" />
+      <span class="mdelta" id="shEndState" style="text-align:left;"></span>
+      <span class="mdelta" id="shEndDelta" style="grid-column:3 / span 2;"></span>
+    </div>
+  </div>
+
+  <div class="sheet gap-top">
+    <div class="sec-head blue">Miles by State</div>
+    <div id="shTotals"></div>
+  </div>
+
+  <button class="block-btn gap-top" style="margin-top:12px;" onclick="shPrint()">🖨 Print / Save PDF Report</button>
+</div>
+
+<!-- ═══════════════════════════════ -->
+<!-- PAY / SCHEDULE TAB             -->
+<!-- ═══════════════════════════════ -->
+<div class="tab-panel" id="tab-pay">
+  <div class="sheet">
+    <div class="sec-head green">Clock</div>
+    <div class="row">
+      <div class="lbl">Shift date<small>the day you clock ON</small></div>
+      <div class="ctrl"><input type="date" class="time-input" id="payDate" style="width:150px;" oninput="payDateTouched=true" /></div>
+    </div>
+    <div class="btn-pair" style="padding:10px 12px;margin-top:0;">
+      <button class="block-btn" id="payOnBtn" onclick="payOn()">▶ ON</button>
+      <button class="block-btn green" id="payOffBtn" onclick="payOff()">■ OFF</button>
+    </div>
+    <div id="payStatus" class="trip-note" style="border-top:1px solid var(--border);"></div>
+  </div>
+
+  <div class="sheet gap-top">
+    <div class="sec-head gold">Pay Period</div>
+    <div class="row">
+      <div class="lbl">Starts on</div>
+      <div class="ctrl"><select class="sel" id="payStartDay" onchange="paySetStart(this.value)"></select></div>
+    </div>
+    <div class="row alt">
+      <div class="lbl">Ends on</div>
+      <div class="ctrl"><select class="sel" id="payEndDay" onchange="paySetEnd(this.value)"></select></div>
+    </div>
+    <div class="row">
+      <div class="lbl">Hourly wage<small>optional</small></div>
+      <div class="ctrl"><span class="unit-lbl">$</span><input type="number" inputmode="decimal" step="any" min="0" class="num-input wide" id="payWage" placeholder="0.00" oninput="paySetWage(this.value)" /></div>
+    </div>
+    <div class="trip-note">Pay periods are 7 days. A shift counts in the period of the day you clocked ON, so an overnight shift stays in one week.</div>
+  </div>
+
+  <div class="sheet gap-top">
+    <div class="sec-head pink">This Pay Period</div>
+    <div id="paySummary"></div>
+  </div>
+
+  <div class="sheet gap-top">
+    <div class="sec-head blue">Weeks <button class="clr-btn" onclick="payAddManual()">+ Add shift</button></div>
+    <div id="payWeeks"></div>
+  </div>
+</div>
 
 <!-- ═══════════════════════════════ -->
 <!-- LOCATIONS TAB                  -->
@@ -577,6 +774,12 @@
     <button class="loc-submit-btn" onclick="submitLocations()">📤 Submit to Company</button>
   </div>
   <button class="loc-export-btn" onclick="exportLocations()">⬇️ Export to Downloads</button>
+  <button class="loc-export-btn" onclick="document.getElementById('locFile').click()">📥 Import Google Saved Places</button>
+  <input type="file" id="locFile" accept=".zip,.json,.geojson,.csv,.kml" multiple style="display:none" onchange="importLocationFiles(this.files)" />
+  <div id="locImportStatus" style="margin:6px 12px 0;font-size:11px;color:var(--muted);line-height:1.5;"></div>
+  <details style="margin:6px 12px 0;font-size:11px;color:var(--muted);line-height:1.55;"><summary style="cursor:pointer;color:var(--accent);font-weight:700;">How to get the file from Google</summary>
+    <div style="padding:6px 0;">1. Open <b>takeout.google.com</b> → <b>Deselect all</b>.<br>2. Tick <b>Saved</b> (your lists, like Starred places) and/or <b>Maps (your places)</b> → Next step → Create export.<br>3. Download the .zip from Google, then pick that .zip here (no need to unzip). <b>Maps (your places)</b> has the exact coordinates; Saved lists often don't.<br>My Maps works too: export as KML (not KMZ) and pick it.</div>
+  </details>
 
   <!-- Search -->
   <div class="search-wrap">
@@ -593,6 +796,12 @@
 <!-- SETTINGS TAB                   -->
 <!-- ═══════════════════════════════ -->
 <div class="tab-panel" id="tab-settings">
+
+  <div class="settings-card">
+    <div class="sec-head orange">Tabs / Modules</div>
+    <div id="modList"></div>
+    <div class="trip-note">Uncheck a tool to remove its tab. Your saved data stays; check it again to bring the tab back. Settings always stays.</div>
+  </div>
 
   <div class="settings-card">
     <div class="sec-head orange">GitHub Admin</div>
@@ -651,7 +860,7 @@
   function dismissBanner(){localStorage.setItem('bm-dismissed','1');document.getElementById('bookmark-banner').style.display='none';}
 
   // ── TABS ──
-  const TAB_IDS=['calc','flow','miles','trip','locs','settings'];
+  const TAB_IDS=['calc','flow','miles','trip','shift','pay','locs','settings'];
   function tabIntoView(i){
     const bar=document.querySelector('.tab-bar'),btn=document.querySelectorAll('.tab-bar .tab')[i];
     if(!bar||!btn||typeof bar.scrollTo!=='function')return;
@@ -663,6 +872,8 @@
     if(t==='locs')renderLocations();
     if(t==='miles')renderMiles();
     if(t==='trip')renderTrip();
+    if(t==='pay')renderPay();
+    if(t==='shift')shRender();
     tabIntoView(TAB_IDS.indexOf(t));
     if(t==='settings')loadGitHubSettings();
   }
@@ -1104,37 +1315,63 @@
     document.getElementById('rateDisplay').textContent='20 BBL/ft · 1.67 BBL/in';
 
     // Clear other fields
-    ['loadTargetBBL','remainTargetBBL','pricePerBBL','startTime','endTime']
+    ['loadTargetBBL','remainTargetBBL','pricePerBBL']
       .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
 
+    flowReset(false);
     // Clear outputs
-    ['r-bbls','r-load-stop','r-remain-level','r-charge','r-duration','r-bblmin','r-gpm']
+    ['r-bbls','r-load-stop','r-remain-level','r-charge']
       .forEach(id=>document.getElementById(id).textContent='—');
     document.getElementById('r-load-hint').textContent='';
     document.getElementById('r-charge-lbl').textContent='';
     document.getElementById('stopAtHint').textContent='Stop level';
   }
 
-  // ── Flow ──────────────────────────────────────────────
-  function stampTime(id){const now=new Date();document.getElementById(id).value=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');calcFlow();}
-
-  function calcFlow(){
-    const s=document.getElementById('startTime').value,e=document.getElementById('endTime').value;
-    if(!s||!e){['r-duration','r-bblmin','r-gpm'].forEach(id=>document.getElementById(id).textContent='—');return;}
+  // ── Flow (load + unload tables) ──────────────────────
+  const LS_FLOW='tc_flow_v1';   // permanent key: only truck + trailer ID are remembered
+  function flowSaveIds(){
+    try{localStorage.setItem(LS_FLOW,JSON.stringify({v:1,truck:document.getElementById('fTruck').value,trailer:document.getElementById('fTrailer').value}));}catch(e){}
+  }
+  function flowLoadIds(){
+    try{
+      const o=JSON.parse(localStorage.getItem(LS_FLOW)||'null');
+      if(o&&typeof o==='object'){
+        document.getElementById('fTruck').value=typeof o.truck==='string'?o.truck:'';
+        document.getElementById('fTrailer').value=typeof o.trailer==='string'?o.trailer:'';
+      }
+    }catch(e){}
+  }
+  // Clear = names + times + results for both tables (truck/trailer stay unless all=true)
+  function flowReset(all){
+    ['fLoadName','fUnloadName','startTime','endTime','uStart','uEnd'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    if(all){['fTruck','fTrailer'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});flowSaveIds();}
+    calcFlow();
+  }
+  function flowClear(){flowReset(false);}
+  function flowTable(sId,eId,out){
+    const s=document.getElementById(sId).value,e=document.getElementById(eId).value;
+    const bblsRaw=parseFloat(document.getElementById('r-bbls').textContent);
+    const hasB=!isNaN(bblsRaw)&&bblsRaw>0;
+    document.getElementById(out.bbl).textContent=hasB?bblsRaw+' BBL':'—';
+    const dash=()=>[out.dur,out.bm,out.gpm].forEach(id=>document.getElementById(id).textContent='—');
+    if(!s||!e){dash();return;}
     const [sh,sm]=s.split(':').map(Number),[eh,em]=e.split(':').map(Number);
     let m=(eh*60+em)-(sh*60+sm);if(m<=0)m+=1440;
     const hrs=Math.floor(m/60),mins=m%60;
-    document.getElementById('r-duration').textContent=hrs>0?`${hrs}h ${mins}m`:`${mins}m`;
-    const bblsEl=document.getElementById('r-bbls');
-    const bbls=parseFloat(bblsEl.textContent);
-    if(!isNaN(bbls)&&bbls>0&&m>0){
-      document.getElementById('r-bblmin').textContent=(bbls/m).toFixed(2)+' BBL/min';
-      document.getElementById('r-gpm').textContent=(bbls*42/m).toFixed(1)+' GPM';
-    } else {
-      document.getElementById('r-bblmin').textContent='—';
-      document.getElementById('r-gpm').textContent='—';
+    document.getElementById(out.dur).textContent=hrs>0?`${hrs}h ${mins}m`:`${mins}m`;
+    if(hasB&&m>0){
+      document.getElementById(out.bm).textContent=(bblsRaw/m).toFixed(2)+' BBL/min';
+      document.getElementById(out.gpm).textContent=(bblsRaw*42/m).toFixed(1)+' GPM';
+    }else{
+      document.getElementById(out.bm).textContent='—';
+      document.getElementById(out.gpm).textContent='—';
     }
   }
+  function calcFlow(){
+    flowTable('startTime','endTime',{bbl:'r-fbbl',dur:'r-duration',bm:'r-bblmin',gpm:'r-gpm'});
+    flowTable('uStart','uEnd',{bbl:'u-fbbl',dur:'u-duration',bm:'u-bblmin',gpm:'u-gpm'});
+  }
+  function stampTime(id){const now=new Date();document.getElementById(id).value=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');calcFlow();}
 
   // ── FUZZY SEARCH ──────────────────────────────────────
   function fuzzyMatch(query,target){
@@ -1264,10 +1501,10 @@
       html+='<div class="loc-section-label">🏢 Company Locations</div>';
       html+=filteredGlobal.map(l=>`
         <div class="loc-card global">
-          <div class="loc-card-head"><div class="loc-card-name">${l.name}</div><span class="loc-card-badge global">Company</span></div>
-          ${l.gps1?`<div class="loc-gps-row"><div class="loc-gps-lbl">🗺️ Routing<br><span style="font-size:9px;">Navigate to</span></div><div class="loc-gps-val">${l.gps1}</div><button class="loc-map-btn" onclick="openMap('${l.gps1}',true)">🧭</button></div>`:''}
-          ${l.gps2?`<div class="loc-gps-row alt"><div class="loc-gps-lbl">📍 Site GPS<br><span style="font-size:9px;">Drop pin</span></div><div class="loc-gps-val">${l.gps2}</div><button class="loc-map-btn" onclick="openMap('${l.gps2}',false)">📍</button></div>`:''}
-          ${l.note?`<div class="loc-note">📝 ${l.note}</div>`:''}
+          <div class="loc-card-head"><div class="loc-card-name">${tcEsc(l.name)}</div><span class="loc-card-badge global">Company</span></div>
+          ${l.gps1?`<div class="loc-gps-row"><div class="loc-gps-lbl">🗺️ Routing<br><span style="font-size:9px;">Navigate to</span></div><div class="loc-gps-val">${tcEsc(l.gps1)}</div><button class="loc-map-btn" onclick="openMap('${tcEsc(l.gps1)}',true)">🧭</button></div>`:''}
+          ${l.gps2?`<div class="loc-gps-row alt"><div class="loc-gps-lbl">📍 Site GPS<br><span style="font-size:9px;">Drop pin</span></div><div class="loc-gps-val">${tcEsc(l.gps2)}</div><button class="loc-map-btn" onclick="openMap('${tcEsc(l.gps2)}',false)">📍</button></div>`:''}
+          ${l.note?`<div class="loc-note">📝 ${tcEsc(l.note)}</div>`:''}
         </div>`).join('');
     }
     if(filteredLocal.length>0){
@@ -1275,15 +1512,15 @@
       html+=filteredLocal.map(l=>`
         <div class="loc-card">
           <div class="loc-card-head">
-            <div class="loc-card-name">${l.name}</div>
+            <div class="loc-card-name">${tcEsc(l.name)}</div>
             <div style="display:flex;gap:6px;align-items:center;">
               <span class="loc-card-badge ${l.submitted?'submitted':'local'}">${l.submitted?'Submitted':'Mine'}</span>
               <button class="loc-delete-btn" onclick="deleteLocation(${l.id})">Delete</button>
             </div>
           </div>
-          ${l.gps1?`<div class="loc-gps-row"><div class="loc-gps-lbl">🗺️ Routing<br><span style="font-size:9px;">Navigate to</span></div><div class="loc-gps-val">${l.gps1}</div><button class="loc-map-btn" onclick="openMap('${l.gps1}',true)">🧭</button></div>`:''}
-          ${l.gps2?`<div class="loc-gps-row alt"><div class="loc-gps-lbl">📍 Site GPS<br><span style="font-size:9px;">Drop pin</span></div><div class="loc-gps-val">${l.gps2}</div><button class="loc-map-btn" onclick="openMap('${l.gps2}',false)">📍</button></div>`:''}
-          ${l.note?`<div class="loc-note">📝 ${l.note}</div>`:''}
+          ${l.gps1?`<div class="loc-gps-row"><div class="loc-gps-lbl">🗺️ Routing<br><span style="font-size:9px;">Navigate to</span></div><div class="loc-gps-val">${tcEsc(l.gps1)}</div><button class="loc-map-btn" onclick="openMap('${tcEsc(l.gps1)}',true)">🧭</button></div>`:''}
+          ${l.gps2?`<div class="loc-gps-row alt"><div class="loc-gps-lbl">📍 Site GPS<br><span style="font-size:9px;">Drop pin</span></div><div class="loc-gps-val">${tcEsc(l.gps2)}</div><button class="loc-map-btn" onclick="openMap('${tcEsc(l.gps2)}',false)">📍</button></div>`:''}
+          ${l.note?`<div class="loc-note">📝 ${tcEsc(l.note)}</div>`:''}
         </div>`).join('');
     }
     el.innerHTML=html;
@@ -1466,8 +1703,22 @@
   // Job distance = drop odometer − pickup odometer (odometer is optional).
   // Permanent key LS_TRIP; versioned (v2) and migrated in place.
   // ════════════════════════════════════════════════════════
+  // Clock used by the Now buttons: '' = this phone's clock, otherwise an IANA zone
+  const TRIP_TZS=[['','My phone'],['America/Chicago','Central (ND / TX)'],['America/Denver','Mountain (MT)'],['America/Los_Angeles','Pacific'],['America/New_York','Eastern']];
+  function tripNowHHMM(d){
+    d=d||new Date();
+    if(trip.tz){
+      try{
+        const p=new Intl.DateTimeFormat('en-GB',{timeZone:trip.tz,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(d);
+        const h=p.find(x=>x.type==='hour').value,m=p.find(x=>x.type==='minute').value;
+        return tcPad(+h%24)+':'+m;
+      }catch(e){}
+    }
+    return tcPad(d.getHours())+':'+tcPad(d.getMinutes());
+  }
+  function setTripTz(v){trip.tz=v;tripSave();}
   function tripBlank(id){return {id,name:null,arr:'',dep:'',odo:''};}
-  function tripDefault(){return {v:2,name:'',date:tcToday(),unit:'mi',group:false,nextId:3,stops:[tripBlank(1),tripBlank(2)]};}
+  function tripDefault(){return {v:2,name:'',date:tcToday(),unit:'mi',group:false,tz:'',nextId:3,stops:[tripBlank(1),tripBlank(2)]};}
   let trip=tcLoad(LS_TRIP,tripDefault);
   (function normalizeTrip(){
     const wasOld=(trip.v||1)<2;
@@ -1477,6 +1728,7 @@
     let maxId=stops.reduce((m,s)=>Math.max(m,s.id),0);
     while(stops.length<2) stops.push(tripBlank(++maxId));
     trip.group=trip.group===true;
+    if(!TRIP_TZS.some(z=>z[0]===trip.tz)) trip.tz='';
     if(trip.group&&stops.length%2) stops.push(tripBlank(++maxId));   // keep pickup/drop pairs complete
     trip.stops=stops;
     trip.nextId=Math.max(trip.nextId||0,maxId+1);
@@ -1516,6 +1768,7 @@
   function renderTrip(){
     document.getElementById('tripName').value=trip.name||'';
     document.getElementById('tripDate').value=trip.date||'';
+    document.getElementById('tripTz').value=trip.tz||'';
     document.getElementById('tUnitMi').classList.toggle('active',trip.unit==='mi');
     document.getElementById('tUnitKm').classList.toggle('active',trip.unit==='km');
     document.getElementById('tGrpOn').classList.toggle('active',trip.group);
@@ -1574,7 +1827,7 @@
   function tripField(i,key,val){trip.stops[i][key]=val;tripSave();updateTripDerived();}
   // "Now": fills Arrive first, then Depart (edit a field by hand to change a time)
   function tripStamp(i){
-    const d=new Date(),t=tcPad(d.getHours())+':'+tcPad(d.getMinutes()),s=trip.stops[i];
+    const t=tripNowHHMM(),s=trip.stops[i];
     if(!s.arr){s.arr=t;document.getElementById('stA'+i).value=t;}
     else if(!s.dep){s.dep=t;document.getElementById('stD'+i).value=t;}
     else{tcToast('Arrive and Depart are already set — edit a time to change it');return;}
@@ -1623,8 +1876,8 @@
   }
   function tripClear(){
     if(!confirm('Clear this whole trip (names, times, odometer)?'))return;
-    const keepUnit=trip.unit,keepGrp=trip.group;
-    trip=tripDefault();trip.unit=keepUnit;trip.group=keepGrp;tripEditing=-1;
+    const keepUnit=trip.unit,keepGrp=trip.group,keepTz=trip.tz;
+    trip=tripDefault();trip.unit=keepUnit;trip.group=keepGrp;trip.tz=keepTz;tripEditing=-1;
     tripSave();renderTrip();
   }
 
@@ -1726,10 +1979,567 @@
   renderMiles();
   renderTrip();
 
+  // ════════════════════════════════════════════════════════
+  // PAY TAB — clock ON/OFF, 7-day pay periods, expected pay.
+  // Permanent key LS_PAY (versioned); shifts are never wiped by updates.
+  // A shift belongs to the pay period of the DATE it was clocked ON.
+  // ════════════════════════════════════════════════════════
+  const LS_PAY='tc_sched_v1';
+  const PAY_DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  let paySched=tcLoad(LS_PAY,()=>({v:1,startDay:0,wage:'',shifts:[]}));
+  let payDateTouched=false;
+  (function normalizePay(){
+    if(!Number.isInteger(paySched.startDay)||paySched.startDay<0||paySched.startDay>6) paySched.startDay=0;
+    paySched.wage=(paySched.wage===null||paySched.wage===undefined)?'':String(paySched.wage);
+    const ok=t=>/^\d{1,2}:\d{2}$/.test(t||'')?t:'';
+    paySched.shifts=(Array.isArray(paySched.shifts)?paySched.shifts:[]).filter(s=>s&&/^\d{4}-\d{2}-\d{2}$/.test(s.date||''))
+      .map((s,i)=>({id:s.id||(Date.now()+i),date:s.date,on:ok(s.on),off:ok(s.off)}));
+    paySched.v=1;
+  })();
+  function paySave(){tcSave(LS_PAY,paySched);}
+  function payParse(s){const p=s.split('-').map(Number);return new Date(p[0],p[1]-1,p[2],12);}   // noon avoids DST edges
+  function payIso(d){return d.getFullYear()+'-'+tcPad(d.getMonth()+1)+'-'+tcPad(d.getDate());}
+  function payAdd(d,n){const x=new Date(d.getTime());x.setDate(x.getDate()+n);return x;}
+  function payPeriodStart(iso){const d=payParse(iso);return payAdd(d,-((d.getDay()-paySched.startDay+7)%7));}
+  function payMins(s){
+    if(!s.on||!s.off)return null;
+    const a=s.on.split(':').map(Number),b=s.off.split(':').map(Number);
+    let m=(b[0]*60+b[1])-(a[0]*60+a[1]);if(m<=0)m+=1440;   // overnight
+    return m;
+  }
+  function payHrs(m){return Math.floor(m/60)+':'+tcPad(m%60);}
+  function payMoney(m){
+    const w=tcNum(paySched.wage);
+    return (w!==null&&w>0)?'$'+(m/60*w).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):'';
+  }
+  function payShort(d){return d.toLocaleDateString(undefined,{month:'short',day:'numeric'});}
+  function payTimeLabel(t){
+    const m=/^(\d{1,2}):(\d{2})$/.exec(t||'');if(!m)return '—';
+    let h=+m[1];const ap=h>=12?'PM':'AM';h=h%12;if(h===0)h=12;return h+':'+m[2]+' '+ap;
+  }
+  function payNowHHMM(){const d=new Date();return tcPad(d.getHours())+':'+tcPad(d.getMinutes());}
+  function payOpen(){return paySched.shifts.find(s=>s.on&&!s.off)||null;}
+
+  function payOn(){
+    const open=payOpen();
+    if(open){tcToast('Already ON since '+payTimeLabel(open.on)+' — tap OFF first');return;}
+    const date=document.getElementById('payDate').value||tcToday();
+    paySched.shifts.push({id:Date.now(),date,on:payNowHHMM(),off:''});
+    paySave();renderPay();tcToast('Clocked ON '+payTimeLabel(payNowHHMM()));
+  }
+  function payOff(){
+    const open=payOpen();
+    if(!open){tcToast('Not clocked ON');return;}
+    open.off=payNowHHMM();
+    paySave();renderPay();
+    tcToast('Clocked OFF — '+payHrs(payMins(open))+' h');
+  }
+  function payAddManual(){
+    const date=document.getElementById('payDate').value||tcToday();
+    paySched.shifts.push({id:Date.now(),date,on:'',off:''});
+    paySave();renderPay();
+    tcToast('Added a blank shift — set its times');
+  }
+  function payEdit(id,field,val){
+    const s=paySched.shifts.find(x=>x.id===id);if(!s)return;
+    s[field]=val;paySave();renderPay();
+  }
+  function payDelete(id){
+    const s=paySched.shifts.find(x=>x.id===id);if(!s)return;
+    if(!confirm('Delete this shift ('+payShort(payParse(s.date))+')?'))return;
+    paySched.shifts=paySched.shifts.filter(x=>x.id!==id);paySave();renderPay();
+  }
+  function paySetStart(v){paySched.startDay=+v;paySave();renderPay();}
+  function paySetEnd(v){paySched.startDay=(+v+1)%7;paySave();renderPay();}   // end day is always the day before the start day
+  function paySetWage(v){paySched.wage=v;paySave();payRenderTotals();}
+
+  function payGroups(){
+    const map={};
+    paySched.shifts.forEach(s=>{const k=payIso(payPeriodStart(s.date));(map[k]=map[k]||[]).push(s);});
+    const todayKey=payIso(payPeriodStart(tcToday()));
+    if(!map[todayKey])map[todayKey]=[];
+    return Object.keys(map).sort().reverse().map(k=>{
+      const list=map[k].slice().sort((a,b)=>(a.date+a.on).localeCompare(b.date+b.on));
+      const mins=list.reduce((t,s)=>t+(payMins(s)||0),0);
+      return {key:k,list,mins,current:k===todayKey};
+    });
+  }
+  function payRowHtml(s){
+    const d=payParse(s.date),m=payMins(s);
+    const lbl=d.toLocaleDateString(undefined,{weekday:'short'})+' '+(d.getMonth()+1)+'/'+d.getDate();
+    return `<div class="prow"><span class="pday">${tcEsc(lbl)}</span>
+      <input type="time" class="tin" value="${tcEsc(s.on)}" aria-label="On" onchange="payEdit(${s.id},'on',this.value)">
+      <input type="time" class="tin" value="${tcEsc(s.off)}" aria-label="Off" onchange="payEdit(${s.id},'off',this.value)">
+      <span class="phrs">${m===null?(s.on&&!s.off?'<span style="color:var(--green)">ON</span>':'—'):payHrs(m)}</span>
+      <button class="del-btn" onclick="payDelete(${s.id})">✕</button></div>`;
+  }
+  function payRenderTotals(){
+    const groups=payGroups(),cur=groups.find(g=>g.current);
+    const sum=document.getElementById('paySummary');
+    const start=payParse(cur.key),end=payAdd(start,6);
+    const money=payMoney(cur.mins);
+    const row=(l,v,alt)=>`<div class="row${alt?' alt':''}"><div class="st-name">${l}</div><div class="ctrl"><span class="out green" style="font-size:16px">${v}</span></div></div>`;
+    sum.innerHTML=`<div class="trip-note" style="border-top:none;padding-bottom:2px;">${tcEsc(payShort(start)+' – '+payShort(end))}</div>`
+      +row('Hours',payHrs(cur.mins)+' h  ('+tcFmt(cur.mins/60)+')',false)
+      +row('Shifts',String(cur.list.length),true)
+      +row('Expected pay',money||'<span style="color:var(--muted);font-size:12px">enter wage</span>',false);
+    // week headers show live totals too
+    groups.forEach(g=>{const el=document.getElementById('pw'+g.key);if(el)el.textContent=payHrs(g.mins)+' h'+(payMoney(g.mins)?' · '+payMoney(g.mins):'');});
+  }
+  function renderPay(){
+    const sd=document.getElementById('payStartDay'),ed=document.getElementById('payEndDay');
+    if(!sd.options.length){
+      sd.innerHTML=PAY_DAYS.map((n,i)=>`<option value="${i}">${n}</option>`).join('');
+      ed.innerHTML=sd.innerHTML;
+    }
+    sd.value=String(paySched.startDay);ed.value=String((paySched.startDay+6)%7);
+    const w=document.getElementById('payWage');if(document.activeElement!==w)w.value=paySched.wage;
+    const dEl=document.getElementById('payDate');if(!payDateTouched||!dEl.value)dEl.value=tcToday();
+    const open=payOpen(),st=document.getElementById('payStatus');
+    st.innerHTML=open?`<b style="color:var(--green)">ON since ${tcEsc(payTimeLabel(open.on))}</b> (${tcEsc(payShort(payParse(open.date)))}). Tap OFF when you finish.`:'Not clocked in. Tap ON when you start; times use this phone\'s clock — you can edit any time below.';
+    document.getElementById('payOnBtn').style.opacity=open?'0.45':'1';
+    document.getElementById('payOffBtn').style.opacity=open?'1':'0.45';
+    // weeks: current expanded, earlier ones collapsed
+    const groups=payGroups();
+    document.getElementById('payWeeks').innerHTML=groups.map(g=>{
+      const s=payParse(g.key),e=payAdd(s,6);
+      const body=g.list.length?g.list.map(payRowHtml).join(''):'<div class="empty-note">No shifts yet this week.</div>';
+      return `<details class="pweek"${g.current?' open':''}><summary><span class="pw-name">${tcEsc(payShort(s)+' – '+payShort(e))}${g.current?' <em>this week</em>':''}</span><span class="pw-tot" id="pw${g.key}"></span></summary>
+        <div class="prow phead"><span>Day</span><span>On</span><span>Off</span><span>Hrs</span><span></span></div>${body}</details>`;
+    }).join('');
+    payRenderTotals();
+  }
+
+  // ════════════════════════════════════════════════════════
+  // SHIFT TAB — one running log per shift: IFTA miles by state, per-load
+  // pickup/drop times + odometer, optional flow rate per stop, printable report.
+  // Permanent key LS_SHIFT (versioned). Odometer values are stored as typed
+  // strings; switching MI/KM converts every one of them.
+  // Readings in order: start, then (state change | load pickup, load drop)…, end.
+  // Miles between two readings are credited to the EARLIER reading's state.
+  // ════════════════════════════════════════════════════════
+  const LS_SHIFT='tc_shift_v1';
+  function shBlankStop(){return {name:'',arr:'',dep:'',odo:'',fs:'',fe:'',bbl:'',ls:'',le:''};}
+  function shDefault(){return {v:1,unit:'mi',date:tcToday(),startOdo:'',startState:'',endOdo:'',nextId:1,items:[]};}
+  let shift=tcLoad(LS_SHIFT,shDefault);
+  (function normalizeShift(){
+    const str=v=>(v===null||v===undefined)?'':String(v);
+    const time=v=>/^\d{1,2}:\d{2}$/.test(str(v))?str(v):'';
+    const stop=s=>{s=s&&typeof s==='object'?s:{};return {name:str(s.name).slice(0,60),arr:time(s.arr),dep:time(s.dep),odo:str(s.odo),fs:time(s.fs),fe:time(s.fe),bbl:str(s.bbl),ls:str(s.ls).slice(0,14),le:str(s.le).slice(0,14)};};
+    shift.unit=shift.unit==='km'?'km':'mi';
+    shift.date=/^\d{4}-\d{2}-\d{2}$/.test(str(shift.date))?shift.date:tcToday();
+    shift.startOdo=str(shift.startOdo);shift.endOdo=str(shift.endOdo);shift.startState=milesClean(shift.startState);
+    let maxId=0;
+    shift.items=(Array.isArray(shift.items)?shift.items:[]).filter(x=>x&&(x.type==='state'||x.type==='load')).map((x,i)=>{
+      const id=Number.isInteger(x.id)?x.id:(i+1);maxId=Math.max(maxId,id);
+      return x.type==='state'?{id,type:'state',odo:str(x.odo),state:milesClean(x.state)}:{id,type:'load',pu:stop(x.pu),dr:stop(x.dr)};
+    });
+    shift.nextId=Math.max(Number.isInteger(shift.nextId)?shift.nextId:1,maxId+1);
+    shift.v=1;
+  })();
+  function shSave(){tcSave(LS_SHIFT,shift);}
+  function shFind(id){return shift.items.find(x=>x.id===id);}
+
+  // ── calculation ──
+  function shMinutes(a,b){
+    if(!a||!b)return null;
+    const x=a.split(':').map(Number),y=b.split(':').map(Number);
+    let m=(y[0]*60+y[1])-(x[0]*60+x[1]);if(m<=0)m+=1440;return m;
+  }
+  function shFlow(st){
+    const m=shMinutes(st.fs,st.fe),b=tcNum(st.bbl);
+    return {mins:m,bbl:b,bpm:(m&&b!==null&&b>0)?b/m:null,gpm:(m&&b!==null&&b>0)?b*42/m:null};
+  }
+  function shCalc(){
+    const rd=[];let cur=shift.startState||'';
+    const add=(key,odo,state)=>{const n=tcNum(odo);if(n!==null&&n>=0)rd.push({key,odo:n,state});};
+    add('start',shift.startOdo,cur);
+    const loadState={},stateAfter={};
+    shift.items.forEach(x=>{
+      if(x.type==='state'){
+        if(/^[A-Z]{2}$/.test(x.state)){cur=x.state;add('s'+x.id,x.odo,cur);}
+        stateAfter[x.id]=cur;
+      }else{
+        loadState[x.id]=cur;
+        add('p'+x.id,x.pu.odo,cur);add('d'+x.id,x.dr.odo,cur);
+      }
+    });
+    add('end',shift.endOdo,cur);
+    const seg={},by={},bad={};let total=0,prev=null;
+    rd.forEach(r=>{
+      if(prev){
+        const d=r.odo-prev.odo;
+        if(d<0){bad[r.key]=true;return;}
+        seg[r.key]={d,st:prev.state};
+        const k=prev.state||'—';by[k]=(by[k]||0)+d;total+=d;
+      }
+      prev=r;
+    });
+    const jobs={};
+    shift.items.forEach(x=>{
+      if(x.type!=='load')return;
+      const a=tcNum(x.pu.odo),b=tcNum(x.dr.odo);
+      jobs[x.id]=(a!==null&&b!==null)?(b>=a?{d:b-a}:{bad:true}):null;
+    });
+    return {seg,by,bad,total,jobs,loadState,endState:cur,first:rd.length?rd[0].odo:null,last:rd.length?rd[rd.length-1].odo:null};
+  }
+  function shOther(){return shift.unit==='mi'?'km':'mi';}
+  function shAlt(m){return shift.unit==='mi'?tcFmt(m*KM_PER_MI)+' km':tcFmt(m/KM_PER_MI)+' mi';}
+
+  // ── edits ──
+  function shTop(f,v){shift[f]=v;shSave();shDerived();}
+  function shTopState(el){const c=milesClean(el.value);if(el.value!==c)el.value=c;shift.startState=c;shSave();shDerived();}
+  function shItem(id,f,v,el){
+    const x=shFind(id);if(!x)return;
+    if(f==='state'){v=milesClean(v);if(el&&el.value!==v)el.value=v;}
+    x[f]=v;shSave();shDerived();
+  }
+  function shStop(id,which,f,v){const x=shFind(id);if(!x)return;x[which][f]=v;shSave();shDerived();}
+  function shStamp(id,which){
+    const x=shFind(id);if(!x)return;
+    const t=tripNowHHMM(),st=x[which],n=which==='pu'?'p':'d';
+    if(!st.arr){st.arr=t;document.getElementById('sh'+n+'A'+id).value=t;}
+    else if(!st.dep){st.dep=t;document.getElementById('sh'+n+'D'+id).value=t;}
+    else{tcToast('Arrive and Depart are already set');return;}
+    shSave();shDerived();
+  }
+  function shAddState(){
+    shift.items.push({id:shift.nextId++,type:'state',odo:'',state:''});shSave();shRender();
+    const el=document.getElementById('shSO'+(shift.nextId-1));if(el)el.focus();
+  }
+  function shAddLoad(){
+    shift.items.push({id:shift.nextId++,type:'load',pu:shBlankStop(),dr:shBlankStop()});shSave();shRender();
+    tcToast('Added Load '+shift.items.filter(x=>x.type==='load').length);
+  }
+  function shDelItem(id){
+    const x=shFind(id);if(!x)return;
+    const has=x.type==='state'?(x.odo||x.state):[x.pu,x.dr].some(s=>Object.values(s).some(Boolean));
+    if(has&&!confirm('Delete this '+(x.type==='state'?'state change':'load')+'?'))return;
+    shift.items=shift.items.filter(y=>y.id!==id);shSave();shRender();
+  }
+  function shClear(){
+    if(!confirm('Clear this whole shift log (start, loads, states, end)?'))return;
+    const u=shift.unit;shift=shDefault();shift.unit=u;shSave();shRender();
+  }
+  function shSetUnit(u){
+    if(u===shift.unit)return;
+    const f=u==='km'?KM_PER_MI:1/KM_PER_MI,r6=n=>Math.round(n*1e6)/1e6;
+    const cv=v=>{const n=tcNum(v);return n===null?v:String(r6(n*f));};
+    shift.startOdo=cv(shift.startOdo);shift.endOdo=cv(shift.endOdo);
+    shift.items.forEach(x=>{if(x.type==='state')x.odo=cv(x.odo);else{x.pu.odo=cv(x.pu.odo);x.dr.odo=cv(x.dr.odo);}});
+    shift.unit=u;shSave();shRender();
+  }
+
+  // ── rendering ──
+  function shStopHtml(x,which,title){
+    const st=x[which],n=which==='pu'?'p':'d',id=x.id;
+    const open=(st.fs||st.fe||(which==='dr'&&st.bbl))?' open':'';
+    const pu=which==='pu';
+    const levels=pu?`<div class="tg tg-head"><span>Tank level</span><span>Start</span><span>End</span><span>BBL</span><span></span></div>
+    <div class="tg tg-row">
+      <span class="pday">Level</span>
+      <input type="text" class="tin" placeholder="8'6&quot;" maxlength="14" value="${tcEsc(st.ls)}" aria-label="Level start" oninput="shStop(${id},'pu','ls',this.value)">
+      <input type="text" class="tin" placeholder="4'0&quot;" maxlength="14" value="${tcEsc(st.le)}" aria-label="Level end" oninput="shStop(${id},'pu','le',this.value)">
+      <input type="number" inputmode="decimal" step="any" min="0" class="oin" placeholder="BBL" value="${tcEsc(st.bbl)}" aria-label="BBL" oninput="shStop(${id},'pu','bbl',this.value)">
+      <span></span>
+    </div>`:'';
+    const bblCell=pu?'<span></span>':`<input type="number" inputmode="decimal" step="any" min="0" class="oin" placeholder="BBL" value="${tcEsc(st.bbl)}" aria-label="BBL" oninput="shStop(${id},'${which}','bbl',this.value)">`;
+    return `<div class="tg tg-head"><span>${title}</span><span>Arrive</span><span>Depart</span><span>Odo ${shift.unit}</span><span></span></div>
+    <div class="tg tg-row">
+      <input class="loc-input" type="text" maxlength="60" placeholder="Location (optional)" value="${tcEsc(st.name)}" oninput="shStop(${id},'${which}','name',this.value)">
+      <input type="time" class="tin" id="sh${n}A${id}" value="${tcEsc(st.arr)}" aria-label="Arrive" oninput="shStop(${id},'${which}','arr',this.value)">
+      <input type="time" class="tin" id="sh${n}D${id}" value="${tcEsc(st.dep)}" aria-label="Depart" oninput="shStop(${id},'${which}','dep',this.value)">
+      <input type="number" inputmode="decimal" step="any" min="0" class="oin" id="sh${n}O${id}" placeholder="odo" value="${tcEsc(st.odo)}" aria-label="Odometer" oninput="shStop(${id},'${which}','odo',this.value)">
+      <button class="now-btn" onclick="shStamp(${id},'${which}')">Now</button>
+    </div>
+    ${levels}
+    <details class="flowd"${open}><summary>Flow rate <span id="shF${n}${id}"></span></summary>
+      <div class="tg tg-head"><span>Pumping</span><span>Start</span><span>End</span><span>${pu?'':'BBL'}</span><span></span></div>
+      <div class="tg tg-row">
+        <span class="pday">${which==='pu'?'Loading':'Unloading'}</span>
+        <input type="time" class="tin" value="${tcEsc(st.fs)}" aria-label="Flow start" oninput="shStop(${id},'${which}','fs',this.value)">
+        <input type="time" class="tin" value="${tcEsc(st.fe)}" aria-label="Flow end" oninput="shStop(${id},'${which}','fe',this.value)">
+        ${bblCell}
+        <span></span>
+      </div>
+    </details>`;
+  }
+  function shRender(){
+    document.getElementById('shDate').value=shift.date;
+    document.getElementById('shUnitMi').classList.toggle('active',shift.unit==='mi');
+    document.getElementById('shUnitKm').classList.toggle('active',shift.unit==='km');
+    document.getElementById('shStartHead').textContent='Start odometer '+shift.unit;
+    document.getElementById('shEndHead').textContent='End odometer '+shift.unit;
+    document.getElementById('shStartOdo').value=shift.startOdo;
+    document.getElementById('shStartState').value=shift.startState;
+    document.getElementById('shEndOdo').value=shift.endOdo;
+    let n=0;
+    document.getElementById('shItems').innerHTML=shift.items.length?shift.items.map(x=>{
+      if(x.type==='state'){
+        return `<div class="job"><div class="job-head"><span class="job-tag">STATE CHANGE</span><span class="job-dist" id="shSD${x.id}"></span><button class="del-btn" onclick="shDelItem(${x.id})">✕</button></div>
+        <div class="mrow">
+          <input type="number" inputmode="decimal" step="any" min="0" class="oin mo" id="shSO${x.id}" placeholder="Odometer at line" value="${tcEsc(x.odo)}" oninput="shItem(${x.id},'odo',this.value)">
+          <input type="text" class="tin ms" maxlength="2" placeholder="ST" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" value="${tcEsc(x.state)}" oninput="shItem(${x.id},'state',this.value,this)">
+          <span></span><span></span></div></div>`;
+      }
+      n++;
+      return `<div class="job"><div class="job-head"><span class="job-tag">LOAD ${n}</span><span class="job-sub" id="shLS${x.id}"></span><span class="job-dist" id="shJD${x.id}"></span><button class="del-btn" onclick="shDelItem(${x.id})">✕</button></div>
+        ${shStopHtml(x,'pu','Pickup')}${shStopHtml(x,'dr','Drop-off')}</div>`;
+    }).join(''):'<div class="empty-note">Tap <b>+ Add Load</b> for each pickup + drop-off, and <b>+ Add State</b> when you cross a state line.</div>';
+    shDerived();
+  }
+  function shFlowText(st){
+    const f=shFlow(st);
+    if(f.bpm===null)return f.mins?'· '+Math.floor(f.mins/60)+'h '+f.mins%60+'m':'';
+    return '· '+f.bpm.toFixed(2)+' BBL/min · '+f.gpm.toFixed(1)+' GPM';
+  }
+  function shDerived(){
+    const c=shCalc(),u=shift.unit;
+    shift.items.forEach(x=>{
+      if(x.type==='state'){
+        const el=document.getElementById('shSD'+x.id);if(!el)return;
+        const k='s'+x.id;
+        el.classList.toggle('bad',!!c.bad[k]);
+        el.textContent=c.bad[k]?'⚠ low':(c.seg[k]?'+'+tcFmt(c.seg[k].d)+' '+u:'');
+        return;
+      }
+      const ls=document.getElementById('shLS'+x.id);if(ls)ls.textContent=c.loadState[x.id]?'in '+c.loadState[x.id]:'';
+      const jd=document.getElementById('shJD'+x.id),j=c.jobs[x.id];
+      if(jd){jd.classList.toggle('bad',!!(j&&j.bad));jd.textContent=j?(j.bad?'⚠ check odo':tcFmt(j.d)+' '+u+' ('+shAlt(j.d)+')'):'';}
+      ['pu','dr'].forEach(w=>{const e=document.getElementById('shF'+(w==='pu'?'p':'d')+x.id);if(e)e.textContent=shFlowText(x[w]);});
+    });
+    const ed=document.getElementById('shEndDelta'),es=document.getElementById('shEndState');
+    if(ed){ed.classList.toggle('bad',!!c.bad.end);ed.textContent=c.bad.end?'⚠ lower than previous':(c.seg.end?'+'+tcFmt(c.seg.end.d)+' '+u:'');}
+    if(es)es.textContent=c.endState?'in '+c.endState:'';
+    const keys=Object.keys(c.by).sort((a,b)=>c.by[b]-c.by[a]);
+    const tot=document.getElementById('shTotals');
+    if(!keys.length){tot.innerHTML='<div class="empty-note">Enter your start odometer, state, and later readings — miles by state fill in here as you go.</div>';return;}
+    const row=(l,m,alt,strong)=>`<div class="row${alt?' alt':''}"><div class="st-name"${strong?' style="color:var(--accent)"':''}>${tcEsc(l)}</div><div class="ctrl"><div class="out-wrap"><span class="out green" style="font-size:15px">${tcFmt(m)} ${u}</span><span class="out-hint">${shAlt(m)}</span></div></div></div>`;
+    tot.innerHTML=row('Total driven',c.total,false,true)+keys.map((k,i)=>row(k==='—'?'No state':k,c.by[k],i%2===0,false)).join('');
+  }
+
+  // ── printable report ──
+  function shReportHtml(){
+    const c=shCalc(),u=shift.unit,E=tcEsc;
+    const truck=(document.getElementById('fTruck')||{}).value||'',trailer=(document.getElementById('fTrailer')||{}).value||'';
+    const d=shift.date?payParse(shift.date).toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'}):'';
+    const t12=t=>tripFmt12(t)||'—';
+    const fm=m=>m===null||m===undefined?'—':tcFmt(m)+' '+u;
+    let h=`<h1>Shift Report</h1><div class="pr-meta">${E(d)}${truck?' · Truck '+E(truck):''}${trailer?' · Trailer '+E(trailer):''}</div>`;
+    h+=`<h2>Summary</h2><table><tr><th>Start odometer</th><th>End odometer</th><th>Total driven</th></tr><tr><td>${fm(tcNum(shift.startOdo))}</td><td>${fm(tcNum(shift.endOdo))}</td><td><b>${fm(c.total)}</b> (${shAlt(c.total)})</td></tr></table>`;
+    const keys=Object.keys(c.by).sort((a,b)=>c.by[b]-c.by[a]);
+    h+=`<h2>IFTA — miles by state</h2>`+(keys.length?`<table><tr><th>State</th><th>${u}</th><th>${shOther()}</th></tr>${keys.map(k=>`<tr><td>${E(k==='—'?'No state':k)}</td><td>${tcFmt(c.by[k])}</td><td>${shAlt(c.by[k]).split(' ')[0]}</td></tr>`).join('')}<tr><td><b>Total</b></td><td><b>${tcFmt(c.total)}</b></td><td><b>${shAlt(c.total).split(' ')[0]}</b></td></tr></table>`:'<p>No mileage entered.</p>');
+    const sc=shift.items.filter(x=>x.type==='state'&&/^[A-Z]{2}$/.test(x.state));
+    if(sc.length)h+=`<h2>State changes</h2><table><tr><th>#</th><th>Entered</th><th>Odometer (${u})</th></tr>${sc.map((x,i)=>`<tr><td>${i+1}</td><td>${E(x.state)}</td><td>${E(x.odo||'—')}</td></tr>`).join('')}</table>`;
+    const loads=shift.items.filter(x=>x.type==='load');
+    h+=`<h2>Loads</h2>`;
+    if(!loads.length)h+='<p>No loads entered.</p>';
+    loads.forEach((x,i)=>{
+      const j=c.jobs[x.id];
+      h+=`<h3>Load ${i+1}${c.loadState[x.id]?' · '+E(c.loadState[x.id]):''}${j&&!j.bad?' · '+tcFmt(j.d)+' '+u+' ('+shAlt(j.d)+')':''}</h3>
+      <table><tr><th></th><th>Location</th><th>Arrive</th><th>Depart</th><th>Odo (${u})</th><th>Level start</th><th>Level end</th><th>BBL</th><th>Pump start</th><th>Pump end</th><th>BBL/min</th><th>GPM</th></tr>
+      ${[['Pickup',x.pu],['Drop-off',x.dr]].map(([l,s])=>{const f=shFlow(s);return `<tr><td><b>${l}</b></td><td>${E(s.name||'—')}</td><td>${t12(s.arr)}</td><td>${t12(s.dep)}</td><td>${E(s.odo||'—')}</td><td>${E(s.ls||'—')}</td><td>${E(s.le||'—')}</td><td>${E(s.bbl||'—')}</td><td>${t12(s.fs)}</td><td>${t12(s.fe)}</td><td>${f.bpm===null?'—':f.bpm.toFixed(2)}</td><td>${f.gpm===null?'—':f.gpm.toFixed(1)}</td></tr>`;}).join('')}</table>`;
+    });
+    h+=`<div class="pr-foot">Tank Calc · printed ${E(new Date().toLocaleString())}</div>`;
+    return h;
+  }
+  function shPrint(){
+    let host=document.getElementById('printHost');
+    if(!host){host=document.createElement('div');host.id='printHost';document.body.appendChild(host);}
+    host.innerHTML=shReportHtml();
+    window.print();
+  }
+
+  // ════════════════════════════════════════════════════════
+  // MODULES — Settings checkboxes decide which tabs show in the tab bar.
+  // Permanent key LS_MODS. Unchecking only hides the tab; its data is kept.
+  // ════════════════════════════════════════════════════════
+  const LS_MODS='tc_modules_v1';
+  const MODULES=[['calc','⚗️ Calculator'],['flow','🌊 Flow Rate'],['miles','🛣️ IFTA'],['trip','🚚 Trip'],['shift','📋 Shift Report'],['pay','🗓️ Pay'],['locs','📍 Locations']];
+  let mods=tcLoad(LS_MODS,()=>({v:1,hidden:[]}));
+  mods.hidden=(Array.isArray(mods.hidden)?mods.hidden:[]).filter(id=>MODULES.some(m=>m[0]===id));
+  mods.v=1;
+  function modHidden(id){return mods.hidden.includes(id);}
+  function applyModules(){
+    const btns=document.querySelectorAll('.tab-bar .tab');
+    TAB_IDS.forEach((id,i)=>{if(btns[i])btns[i].classList.toggle('hidden',modHidden(id));});
+    const active=TAB_IDS.find(id=>document.getElementById('tab-'+id).classList.contains('active'));
+    if(!active||modHidden(active)){
+      const first=TAB_IDS.find(id=>!modHidden(id));
+      if(first)switchTab(first);
+    }
+  }
+  function modToggle(id,on){
+    mods.hidden=mods.hidden.filter(x=>x!==id);
+    if(!on)mods.hidden.push(id);
+    tcSave(LS_MODS,mods);
+    applyModules();
+  }
+  function renderModules(){
+    const el=document.getElementById('modList');if(!el)return;
+    el.innerHTML=MODULES.map(([id,label],i)=>`<label class="mod-row${i%2?' alt':''}"><input type="checkbox" ${modHidden(id)?'':'checked'} onchange="modToggle('${id}',this.checked)"><span>${label}</span></label>`).join('');
+  }
+
+  // ════════════════════════════════════════════════════════
+  // IMPORT SAVED PLACES (Google Takeout .zip, Saved Places .json, list .csv, My Maps .kml)
+  // Adds to "My Locations" (never overwrites), skips duplicates.
+  // ════════════════════════════════════════════════════════
+  function locCoordsFromText(s){
+    s=String(s||'');
+    let m=/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/.exec(s)||/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/.exec(s)||/[?&](?:q|ll|query|destination)=(-?\d+(?:\.\d+)?)(?:,|%2C)\s*(-?\d+(?:\.\d+)?)/i.exec(s);
+    return m?locFmtCoords(+m[1],+m[2]):'';
+  }
+  function locFmtCoords(lat,lng){
+    if(!isFinite(lat)||!isFinite(lng)||Math.abs(lat)>90||Math.abs(lng)>180||(lat===0&&lng===0))return '';
+    return lat.toFixed(6)+', '+lng.toFixed(6);
+  }
+  function locParseCSV(text){
+    const rows=[];let row=[],f='',q=false;
+    text=String(text||'').replace(/^﻿/,'');
+    for(let i=0;i<text.length;i++){
+      const c=text[i];
+      if(q){if(c==='"'){if(text[i+1]==='"'){f+='"';i++;}else q=false;}else f+=c;}
+      else if(c==='"')q=true;
+      else if(c===','){row.push(f);f='';}
+      else if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;row.push(f);f='';if(row.some(x=>x!==''))rows.push(row);row=[];}
+      else f+=c;
+    }
+    row.push(f);if(row.some(x=>x!==''))rows.push(row);
+    return rows;
+  }
+  function locFromCSV(text){
+    const rows=locParseCSV(text);if(rows.length<2)return [];
+    const h=rows[0].map(x=>x.trim().toLowerCase());
+    const ix=n=>h.indexOf(n);
+    const iT=ix('title')>=0?ix('title'):ix('name'),iU=ix('url'),iN=ix('note'),iC=ix('comment');
+    if(iT<0)return [];
+    return rows.slice(1).map(r=>{
+      const url=iU>=0?(r[iU]||''):'';
+      const notes=[iN>=0?r[iN]:'',iC>=0?r[iC]:''].map(x=>(x||'').trim()).filter(Boolean);
+      return {name:(r[iT]||'').trim(),gps1:locCoordsFromText(url),note:notes.join(' · '),url};
+    });
+  }
+  function locFromGeoJSON(obj){
+    const feats=Array.isArray(obj)?obj:(obj&&Array.isArray(obj.features)?obj.features:[]);
+    return feats.map(f=>{
+      const p=(f&&f.properties)||{},loc=p.Location||p.location||{};
+      let gps='';
+      const c=f&&f.geometry&&f.geometry.coordinates;
+      if(Array.isArray(c)&&c.length>=2)gps=locFmtCoords(+c[1],+c[0]);
+      if(!gps){const g=loc['Geo Coordinates']||{};gps=locFmtCoords(parseFloat(g.Latitude),parseFloat(g.Longitude));}
+      const url=p['Google Maps URL']||p.google_maps_url||p.URL||p.url||'';
+      if(!gps)gps=locCoordsFromText(url);
+      const name=String(p.Title||p.title||p.name||loc['Business Name']||'').trim();
+      const notes=[loc.Address||'',p.Comment||p.comment||''].map(x=>String(x).trim()).filter(Boolean);
+      return {name,gps1:gps,note:notes.join(' · '),url};
+    });
+  }
+  function locFromKML(text){
+    let doc;try{doc=new DOMParser().parseFromString(String(text||''),'text/xml');}catch(e){return [];}
+    return Array.from(doc.getElementsByTagName('Placemark')).map(pm=>{
+      const g=t=>{const e=pm.getElementsByTagName(t)[0];return e?e.textContent.trim():'';};
+      const pt=pm.getElementsByTagName('Point')[0];
+      let gps='';
+      if(pt){const ce=pt.getElementsByTagName('coordinates')[0];if(ce){const a=ce.textContent.trim().split(',');gps=locFmtCoords(parseFloat(a[1]),parseFloat(a[0]));}}
+      const desc=g('description').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
+      return {name:g('name'),gps1:gps,note:desc.slice(0,200),url:''};
+    }).filter(x=>x.gps1);
+  }
+  async function locInflate(bytes){
+    const ds=new DecompressionStream('deflate-raw'),w=ds.writable.getWriter();
+    w.write(bytes);w.close();
+    const rd=ds.readable.getReader(),parts=[];let len=0;
+    for(;;){const {done,value}=await rd.read();if(done)break;parts.push(value);len+=value.length;}
+    const out=new Uint8Array(len);let o=0;parts.forEach(p=>{out.set(p,o);o+=p.length;});
+    return out;
+  }
+  async function locReadZip(buf){
+    const u=new Uint8Array(buf),dv=new DataView(buf);
+    let e=-1;for(let i=u.length-22;i>=Math.max(0,u.length-70000);i--){if(dv.getUint32(i,true)===0x06054b50){e=i;break;}}
+    if(e<0)throw new Error('Not a zip file');
+    const n=dv.getUint16(e+10,true);let p=dv.getUint32(e+16,true);
+    const out=[],dec=new TextDecoder();
+    for(let k=0;k<n;k++){
+      if(dv.getUint32(p,true)!==0x02014b50)break;
+      const method=dv.getUint16(p+10,true),csz=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),xl=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),off=dv.getUint32(p+42,true);
+      const name=dec.decode(u.subarray(p+46,p+46+nl));
+      p+=46+nl+xl+cl;
+      if(!/\.(json|geojson|csv|kml)$/i.test(name)||csz>60e6)continue;
+      const lnl=dv.getUint16(off+26,true),lxl=dv.getUint16(off+28,true),start=off+30+lnl+lxl;
+      const raw=u.subarray(start,start+csz);
+      let data;
+      if(method===0)data=raw;else if(method===8)data=await locInflate(raw);else continue;
+      out.push({name,text:dec.decode(data)});
+    }
+    return out;
+  }
+  function locParseAny(name,text){
+    if(/\.kml$/i.test(name))return locFromKML(text);
+    if(/\.csv$/i.test(name))return locFromCSV(text);
+    try{return locFromGeoJSON(JSON.parse(text));}catch(e){return [];}
+  }
+  function locKey(l){return (l.name||'').trim().toLowerCase()+'|'+(l.gps1||'').replace(/\s/g,'').split(',').map(x=>(+x).toFixed(4)).join(',');}
+  async function pushManyToGitHub(entries){
+    const token=localStorage.getItem('gh-token'),repo=localStorage.getItem('gh-repo')||'venomknights/tank-calc';
+    if(!token)return false;
+    const hdr={Authorization:`token ${token}`,'Accept':'application/vnd.github+json'};
+    const r=await fetch(`https://api.github.com/repos/${repo}/contents/locations.json`,{headers:hdr});
+    let sha=null,cur=[];
+    if(r.ok){const d=await r.json();sha=d.sha;cur=JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));}
+    const have=new Set(cur.map(locKey));
+    entries.forEach(e=>{const k=locKey(e);if(!have.has(k)){have.add(k);cur.push({name:e.name,gps1:e.gps1,gps2:e.gps2||'',note:e.note||''});}});
+    const body={message:`Import ${entries.length} saved places`,content:btoa(unescape(encodeURIComponent(JSON.stringify(cur,null,2))))};
+    if(sha)body.sha=sha;
+    const w=await fetch(`https://api.github.com/repos/${repo}/contents/locations.json`,{method:'PUT',headers:{...hdr,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    return w.ok;
+  }
+  async function importLocationFiles(files){
+    const st=document.getElementById('locImportStatus');
+    const say=m=>{if(st)st.textContent=m;};
+    files=Array.from(files||[]);if(!files.length)return;
+    say('Reading '+files.length+' file'+(files.length>1?'s':'')+'…');
+    let cands=[],unreadable=[];
+    for(const f of files){
+      try{
+        if(/\.zip$/i.test(f.name)){
+          const ents=await locReadZip(await f.arrayBuffer());
+          if(!ents.length)unreadable.push(f.name+' (nothing usable inside)');
+          ents.forEach(e=>{cands=cands.concat(locParseAny(e.name,e.text));});
+        }else cands=cands.concat(locParseAny(f.name,await f.text()));
+      }catch(e){unreadable.push(f.name);}
+    }
+    cands=cands.filter(c=>c.name);
+    const locs=getLocations(),seen=new Set(locs.map(locKey));
+    let added=[],dup=0,noGps=0;
+    cands.forEach((c,i)=>{
+      const k=locKey(c);
+      if(seen.has(k)){dup++;return;}
+      seen.add(k);
+      if(!c.gps1)noGps++;
+      const note=[c.note,(!c.gps1&&c.url)?'Google link: '+c.url:''].filter(Boolean).join(' · ');
+      added.push({id:Date.now()+i,name:c.name.slice(0,80),gps1:c.gps1,gps2:'',note,submitted:false,imported:true});
+    });
+    if(added.length){saveLocations(locs.concat(added));renderLocations();}
+    let msg=`Imported ${added.length} location${added.length===1?'':'s'}`;
+    if(dup)msg+=`, skipped ${dup} duplicate${dup===1?'':'s'}`;
+    if(noGps)msg+=`. ${noGps} had no coordinates in the file (kept with their Google link in the note)`;
+    if(unreadable.length)msg+=`. Could not read: ${unreadable.join(', ')}`;
+    if(!cands.length&&!unreadable.length)msg='No places found in that file.';
+    say(msg+'.');
+    const el=document.getElementById('locFile');if(el)el.value='';
+    if(added.length&&localStorage.getItem('gh-token')&&confirm(`Also add these ${added.length} to the shared list on GitHub (locations.json) so they live with the app?`)){
+      try{const ok=await pushManyToGitHub(added);say(msg+'. '+(ok?'Saved to GitHub too.':'GitHub save failed — use Export to Downloads instead.'));}
+      catch(e){say(msg+'. GitHub save failed — use Export to Downloads instead.');}
+    }
+  }
+
   // ── INIT ──────────────────────────────────────────────
+  renderModules();shRender();
+  flowLoadIds();
   renderInputs();   // build initial ft/in fields
   calc();
   loadGlobalLocations();
+  applyModules();
 </script>
 </body>
 </html>
