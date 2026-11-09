@@ -235,21 +235,39 @@
     .flowd summary span { color:var(--green); }
     #printHost { display:none; }
     @media print {
+      @page { margin:8mm; }
       html, body { background:#fff !important; color:#000 !important; }
       body > *:not(#printHost) { display:none !important; }
-      #printHost { display:block !important; color:#000; background:#fff; font-family:Arial,Helvetica,sans-serif; font-size:11px; padding:8px; }
-      #printHost h1 { font-size:20px; margin:0 0 2px; }
-      #printHost h2 { font-size:13px; margin:14px 0 4px; border-bottom:2px solid #000; }
-      #printHost h3 { font-size:12px; margin:10px 0 3px; }
-      #printHost .pr-meta { color:#333; margin-bottom:6px; }
-      #printHost table { border-collapse:collapse; width:100%; margin-bottom:6px; page-break-inside:avoid; }
-      #printHost th, #printHost td { border:1px solid #888; padding:3px 5px; text-align:left; }
-      #printHost th { background:#eee; }
-      #printHost .pr-foot { margin-top:12px; color:#555; font-size:9px; }
+      #printHost { display:block !important; color:#000; background:#fff; font-family:Arial,Helvetica,sans-serif; font-size:10px; }
+      #printHost .pr-co { text-align:center; font-size:14px; font-weight:700; letter-spacing:1px; }
+      #printHost h1 { font-size:13px; text-align:center; margin:2px 0 8px; }
+      #printHost table { border-collapse:collapse; width:100%; margin-bottom:6px; }
+      #printHost th, #printHost td { border:1px solid #777; padding:3px 4px; text-align:left; vertical-align:middle; }
+      #printHost th { background:#eee; font-size:9px; }
+      #printHost .pr-head th { width:17%; font-size:10px; }
+      #printHost .pr-log td { height:21px; }
+      #printHost .pr-log th { text-align:center; }
+      #printHost .pr-n, #printHost .pr-m { text-align:center; font-weight:700; }
+      #printHost .pr-sm { font-size:8px; color:#333; }
+      #printHost tr { page-break-inside:avoid; }
+      #printHost .pr-sig { display:flex; justify-content:space-between; margin-top:16px; font-size:11px; }
     }
+    .shload > summary { list-style:none; cursor:pointer; }
+    .shload > summary::-webkit-details-marker { display:none; }
+    .shload > summary .job-tag::before { content:'▾ '; }
+    .shload:not([open]) > summary .job-tag::before { content:'▸ '; }
+    .shload .job-sub { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .shload .job-dist { margin-left:0; }
+    .lvl { display:flex; align-items:center; gap:5px; padding:5px 8px; border-top:1px solid var(--border); flex-wrap:nowrap; }
+    .lvl .lv { font-size:10px; color:var(--muted); font-weight:700; flex:none; }
+    .lvl .tin { width:42px; flex:none; }
+    .lvl .tin.wide { width:auto; flex:1; min-width:0; }
     .mod-row { display:flex; align-items:center; gap:12px; padding:13px 14px; font-size:14px; font-weight:700; color:var(--text); cursor:pointer; }
     .mod-row.alt { background:var(--row-alt); }
     .mod-row input { width:20px; height:20px; accent-color:var(--accent); flex:none; }
+    .tin::-webkit-calendar-picker-indicator, .time-input::-webkit-calendar-picker-indicator { display:none; }
+    .tin[type=time] { font-size:11.5px; letter-spacing:-.2px; padding:7px 0; }
+    #shTStart, #shTEnd, #tab-pay .time-input { width:118px !important; }
     #tcToast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:#1c2733; border:1px solid var(--accent); color:var(--text); padding:10px 16px; border-radius:10px; font-size:12px; font-weight:700; opacity:0; pointer-events:none; transition:opacity .2s; z-index:50; max-width:90vw; text-align:center; }
     #tcToast.show { opacity:1; }
 
@@ -646,7 +664,7 @@
 <div id="tcToast"></div>
 
 <!-- ═══════════════════════════════ -->
-<!-- SHIFT TAB — IFTA + trips + flow per load, printable report -->
+<!-- SHIFT TAB — per-load log + printable driver log -->
 <!-- ═══════════════════════════════ -->
 <div class="tab-panel" id="tab-shift">
   <div class="sheet">
@@ -656,46 +674,55 @@
       <div class="ctrl"><input type="date" class="time-input" id="shDate" style="width:150px;" oninput="shTop('date',this.value)" /></div>
     </div>
     <div class="row alt">
-      <div class="lbl">Units</div>
+      <div class="lbl">Shift start</div>
+      <div class="ctrl" style="gap:6px;"><input type="time" class="time-input" id="shTStart" oninput="shTop('tStart',this.value)" /><button class="stamp-btn" onclick="shNowTop('tStart','shTStart')">Now</button></div>
+    </div>
+    <div class="row">
+      <div class="lbl">Shift end</div>
+      <div class="ctrl" style="gap:6px;"><input type="time" class="time-input" id="shTEnd" oninput="shTop('tEnd',this.value)" /><button class="stamp-btn" onclick="shNowTop('tEnd','shTEnd')">Now</button></div>
+    </div>
+    <div class="row alt">
+      <div class="lbl">Hours worked</div>
+      <div class="ctrl"><span class="out green" style="font-size:16px;" id="shHours">—</span></div>
+    </div>
+    <div class="row">
+      <div class="lbl">Clock<small>time zone the Now buttons use</small></div>
+      <div class="ctrl"><select class="sel" id="shTz" onchange="shSetTz(this.value)"></select></div>
+    </div>
+    <div class="row alt">
+      <div class="lbl">Units<small>same as IFTA tab</small></div>
       <div class="ctrl"><div class="tog-group">
         <button class="tog active" id="shUnitMi" onclick="shSetUnit('mi')">MI</button>
         <button class="tog" id="shUnitKm" onclick="shSetUnit('km')">KM</button>
       </div></div>
     </div>
-    <div class="mrow mhead"><span id="shStartHead">Start odometer</span><span>State</span><span></span><span></span></div>
-    <div class="mrow">
-      <input type="number" inputmode="decimal" step="any" min="0" class="oin mo" id="shStartOdo" placeholder="Start of shift" oninput="shTop('startOdo',this.value)" />
-      <input type="text" class="tin ms" id="shStartState" maxlength="2" placeholder="ST" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" oninput="shTopState(this)" />
-      <span></span><span></span>
-    </div>
-    <div class="trip-note">Enter your starting odometer and state. Loads and drops use the last state you entered — tap <b>+ Add State</b> when you cross a line.</div>
+    <div class="trip-note" id="shStartNote"></div>
   </div>
 
   <div class="sheet gap-top">
-    <div class="sec-head pink">Run</div>
+    <div class="sec-head pink">Loads</div>
     <div id="shItems"></div>
-    <div class="btn-pair" style="padding:10px 12px;margin-top:0;">
-      <button class="block-btn green" onclick="shAddState()">+ Add State</button>
-      <button class="block-btn" onclick="shAddLoad()">+ Add Load</button>
-    </div>
+    <div style="padding:10px 12px;"><button class="block-btn" onclick="shAddLoad()">+ Add Load</button></div>
   </div>
 
   <div class="sheet gap-top">
-    <div class="sec-head gold">End of Shift</div>
-    <div class="mrow mhead"><span id="shEndHead">End odometer</span><span>State</span><span></span><span></span></div>
-    <div class="mrow">
-      <input type="number" inputmode="decimal" step="any" min="0" class="oin mo" id="shEndOdo" placeholder="End of shift" oninput="shTop('endOdo',this.value)" />
-      <span class="mdelta" id="shEndState" style="text-align:left;"></span>
-      <span class="mdelta" id="shEndDelta" style="grid-column:3 / span 2;"></span>
+    <div class="sec-head gold">Report Header <span style="color:var(--muted);letter-spacing:1px;text-transform:none;font-size:9px;">saved, not cleared</span></div>
+    <div class="row">
+      <div class="lbl">Company<small>optional</small></div>
+      <div class="ctrl"><input class="loc-input fin" id="shCompany" type="text" maxlength="60" placeholder="Company name" oninput="shMetaInput()" /></div>
     </div>
+    <div class="row alt">
+      <div class="lbl">Driver</div>
+      <div class="ctrl"><input class="loc-input fin" id="shDriver" type="text" maxlength="40" placeholder="Driver name" oninput="shMetaInput()" /></div>
+    </div>
+    <div class="row">
+      <div class="lbl">Client<small>optional</small></div>
+      <div class="ctrl"><input class="loc-input fin" id="shClient" type="text" maxlength="60" placeholder="Client / route" oninput="shMetaInput()" /></div>
+    </div>
+    <div class="trip-note">Truck and Trailer ID come from the Flow tab. Miles by state come from the IFTA tab.</div>
   </div>
 
-  <div class="sheet gap-top">
-    <div class="sec-head blue">Miles by State</div>
-    <div id="shTotals"></div>
-  </div>
-
-  <button class="block-btn gap-top" style="margin-top:12px;" onclick="shPrint()">🖨 Print / Save PDF Report</button>
+  <button class="block-btn" style="margin-top:12px;" onclick="shPrint()">🖨 Print / Save PDF Report</button>
 </div>
 
 <!-- ═══════════════════════════════ -->
@@ -1687,6 +1714,7 @@
     const r6=n=>Math.round(n*1e6)/1e6;
     miles.lines.forEach(l=>{if(l.odo!==null)l.odo=r6(l.odo*f);});
     miles.unit=u;
+    if(typeof shApplyUnit==='function')shApplyUnit(u);
     milesSave();renderMiles();
   }
   function initMilesTab(){}
@@ -2111,34 +2139,84 @@
   }
 
   // ════════════════════════════════════════════════════════
-  // SHIFT TAB — one running log per shift: IFTA miles by state, per-load
-  // pickup/drop times + odometer, optional flow rate per stop, printable report.
-  // Permanent key LS_SHIFT (versioned). Odometer values are stored as typed
-  // strings; switching MI/KM converts every one of them.
-  // Readings in order: start, then (state change | load pickup, load drop)…, end.
-  // Miles between two readings are credited to the EARLIER reading's state.
+  // SHIFT TAB — per-load log (names, arrive/depart, odometer, pump start/stop,
+  // BBL, WO #, water ticket #, tank levels) + printable driver log.
+  // Mileage: IFTA tab owns start mileage and states. Miles per LOAD =
+  //   drop odometer − previous load's drop odometer
+  //   (first load: drop odometer − first odometer line of the IFTA tab).
+  // Permanent keys LS_SHIFT (v2, migrated from v1) and LS_SHMETA (never cleared).
   // ════════════════════════════════════════════════════════
-  const LS_SHIFT='tc_shift_v1';
-  function shBlankStop(){return {name:'',arr:'',dep:'',odo:'',fs:'',fe:'',bbl:'',ls:'',le:''};}
-  function shDefault(){return {v:1,unit:'mi',date:tcToday(),startOdo:'',startState:'',endOdo:'',nextId:1,items:[]};}
+  const LS_SHIFT='tc_shift_v1', LS_SHMETA='tc_shmeta_v1';
+  function shBlankStop(){return {name:'',arr:'',dep:'',odo:'',fs:'',fe:'',bbl:'',wo:'',wt:'',lsF:'',lsI:'',leF:'',leI:''};}
+  function shDefault(){return {v:2,unit:miles.unit,tz:'',date:tcToday(),tStart:'',tEnd:'',nextId:1,items:[]};}
   let shift=tcLoad(LS_SHIFT,shDefault);
+  let shMeta=tcLoad(LS_SHMETA,()=>({v:1,company:'',driver:'',client:''}));
   (function normalizeShift(){
     const str=v=>(v===null||v===undefined)?'':String(v);
     const time=v=>/^\d{1,2}:\d{2}$/.test(str(v))?str(v):'';
-    const stop=s=>{s=s&&typeof s==='object'?s:{};return {name:str(s.name).slice(0,60),arr:time(s.arr),dep:time(s.dep),odo:str(s.odo),fs:time(s.fs),fe:time(s.fe),bbl:str(s.bbl),ls:str(s.ls).slice(0,14),le:str(s.le).slice(0,14)};};
+    const parseLvl=v=>{const m=/^\s*(\d+)\s*['′]?\s*(\d*\.?\d*)/.exec(str(v));return m?[m[1],m[2]]:['',''];};
+    const stop=s=>{
+      s=s&&typeof s==='object'?s:{};
+      const o={name:str(s.name).slice(0,60),arr:time(s.arr),dep:time(s.dep),odo:str(s.odo),fs:time(s.fs),fe:time(s.fe),bbl:str(s.bbl),wo:str(s.wo).slice(0,20),wt:str(s.wt).slice(0,20),
+        lsF:str(s.lsF).slice(0,5),lsI:str(s.lsI).slice(0,5),leF:str(s.leF).slice(0,5),leI:str(s.leI).slice(0,5)};
+      // v1 had one text box per level ("8'6\"") → split into feet / inches
+      if(!o.lsF&&!o.lsI&&s.ls){const p=parseLvl(s.ls);o.lsF=p[0];o.lsI=p[1];}
+      if(!o.leF&&!o.leI&&s.le){const p=parseLvl(s.le);o.leF=p[0];o.leI=p[1];}
+      return o;
+    };
     shift.unit=shift.unit==='km'?'km':'mi';
+    shift.tz=TRIP_TZS.some(z=>z[0]===shift.tz)?shift.tz:'';
     shift.date=/^\d{4}-\d{2}-\d{2}$/.test(str(shift.date))?shift.date:tcToday();
-    shift.startOdo=str(shift.startOdo);shift.endOdo=str(shift.endOdo);shift.startState=milesClean(shift.startState);
+    shift.tStart=time(shift.tStart);shift.tEnd=time(shift.tEnd);
     let maxId=0;
-    shift.items=(Array.isArray(shift.items)?shift.items:[]).filter(x=>x&&(x.type==='state'||x.type==='load')).map((x,i)=>{
+    // v1 "state change" lines are gone (IFTA tab owns states); loads are kept
+    shift.items=(Array.isArray(shift.items)?shift.items:[]).filter(x=>x&&x.type==='load').map((x,i)=>{
       const id=Number.isInteger(x.id)?x.id:(i+1);maxId=Math.max(maxId,id);
-      return x.type==='state'?{id,type:'state',odo:str(x.odo),state:milesClean(x.state)}:{id,type:'load',pu:stop(x.pu),dr:stop(x.dr)};
+      return {id,type:'load',open:x.open!==false,pu:stop(x.pu),dr:stop(x.dr)};
     });
     shift.nextId=Math.max(Number.isInteger(shift.nextId)?shift.nextId:1,maxId+1);
-    shift.v=1;
+    delete shift.startOdo;delete shift.endOdo;delete shift.startState;
+    shift.v=2;
+    shMeta.company=str(shMeta.company);shMeta.driver=str(shMeta.driver);shMeta.client=str(shMeta.client);shMeta.v=1;
   })();
   function shSave(){tcSave(LS_SHIFT,shift);}
   function shFind(id){return shift.items.find(x=>x.id===id);}
+  function shMetaInput(){
+    shMeta.company=document.getElementById('shCompany').value;
+    shMeta.driver=document.getElementById('shDriver').value;
+    shMeta.client=document.getElementById('shClient').value;
+    tcSave(LS_SHMETA,shMeta);
+  }
+
+  // clock (time zone for the Now buttons on this tab)
+  function shNowHHMM(d){
+    d=d||new Date();
+    if(shift.tz){
+      try{
+        const p=new Intl.DateTimeFormat('en-GB',{timeZone:shift.tz,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(d);
+        return tcPad(+p.find(x=>x.type==='hour').value%24)+':'+p.find(x=>x.type==='minute').value;
+      }catch(e){}
+    }
+    return tcPad(d.getHours())+':'+tcPad(d.getMinutes());
+  }
+  function shSetTz(v){shift.tz=v;shSave();}
+
+  // ── units follow the IFTA tab ──
+  function shApplyUnit(u){
+    if(u===shift.unit)return;
+    const f=u==='km'?KM_PER_MI:1/KM_PER_MI,r6=n=>Math.round(n*1e6)/1e6;
+    const cv=v=>{const n=tcNum(v);return n===null?v:String(r6(n*f));};
+    shift.items.forEach(x=>{x.pu.odo=cv(x.pu.odo);x.dr.odo=cv(x.dr.odo);});
+    shift.unit=u;shSave();
+    if(document.getElementById('shItems'))shRender();
+  }
+  function shSyncUnit(){shApplyUnit(miles.unit);}
+  function shSetUnit(u){
+    if(u===miles.unit&&u===shift.unit)return;
+    shApplyUnit(u);                      // convert this tab's readings
+    if(miles.unit!==u)setMilesUnit(u);   // and the IFTA tab's (it will not convert us twice)
+    shRender();
+  }
 
   // ── calculation ──
   function shMinutes(a,b){
@@ -2150,197 +2228,155 @@
     const m=shMinutes(st.fs,st.fe),b=tcNum(st.bbl);
     return {mins:m,bbl:b,bpm:(m&&b!==null&&b>0)?b/m:null,gpm:(m&&b!==null&&b>0)?b*42/m:null};
   }
-  function shCalc(){
-    const rd=[];let cur=shift.startState||'';
-    const add=(key,odo,state)=>{const n=tcNum(odo);if(n!==null&&n>=0)rd.push({key,odo:n,state});};
-    add('start',shift.startOdo,cur);
-    const loadState={},stateAfter={};
-    shift.items.forEach(x=>{
-      if(x.type==='state'){
-        if(/^[A-Z]{2}$/.test(x.state)){cur=x.state;add('s'+x.id,x.odo,cur);}
-        stateAfter[x.id]=cur;
-      }else{
-        loadState[x.id]=cur;
-        add('p'+x.id,x.pu.odo,cur);add('d'+x.id,x.dr.odo,cur);
-      }
-    });
-    add('end',shift.endOdo,cur);
-    const seg={},by={},bad={};let total=0,prev=null;
-    rd.forEach(r=>{
-      if(prev){
-        const d=r.odo-prev.odo;
-        if(d<0){bad[r.key]=true;return;}
-        seg[r.key]={d,st:prev.state};
-        const k=prev.state||'—';by[k]=(by[k]||0)+d;total+=d;
-      }
-      prev=r;
-    });
-    const jobs={};
-    shift.items.forEach(x=>{
-      if(x.type!=='load')return;
-      const a=tcNum(x.pu.odo),b=tcNum(x.dr.odo);
-      jobs[x.id]=(a!==null&&b!==null)?(b>=a?{d:b-a}:{bad:true}):null;
-    });
-    return {seg,by,bad,total,jobs,loadState,endState:cur,first:rd.length?rd[0].odo:null,last:rd.length?rd[rd.length-1].odo:null};
+  function shHoursText(){
+    const m=shMinutes(shift.tStart,shift.tEnd);
+    return m===null?'':Math.floor(m/60)+'h '+(m%60)+'m ('+tcFmt(m/60)+' h)';
   }
-  function shOther(){return shift.unit==='mi'?'km':'mi';}
+  function shIftaFirst(){const l=miles.lines.find(x=>x.odo!==null&&isFinite(x.odo));return l?l.odo:null;}
+  function shIftaLast(){for(let i=miles.lines.length-1;i>=0;i--){const l=miles.lines[i];if(l.odo!==null&&isFinite(l.odo))return l.odo;}return null;}
+  // miles per load: from the previous load's drop-off odometer (or the IFTA start) to this load's drop-off odometer
+  function shLoadMiles(){
+    const out={};let prev=shIftaFirst();
+    shift.items.forEach(x=>{
+      const end=tcNum(x.dr.odo);
+      if(end===null){out[x.id]=null;return;}
+      if(prev===null){out[x.id]={noStart:true};prev=end;return;}
+      if(end<prev){out[x.id]={bad:true,from:prev};return;}
+      out[x.id]={d:end-prev,from:prev};prev=end;
+    });
+    return out;
+  }
   function shAlt(m){return shift.unit==='mi'?tcFmt(m*KM_PER_MI)+' km':tcFmt(m/KM_PER_MI)+' mi';}
 
   // ── edits ──
   function shTop(f,v){shift[f]=v;shSave();shDerived();}
-  function shTopState(el){const c=milesClean(el.value);if(el.value!==c)el.value=c;shift.startState=c;shSave();shDerived();}
-  function shItem(id,f,v,el){
-    const x=shFind(id);if(!x)return;
-    if(f==='state'){v=milesClean(v);if(el&&el.value!==v)el.value=v;}
-    x[f]=v;shSave();shDerived();
-  }
+  function shNowTop(f,id){const t=shNowHHMM();shift[f]=t;document.getElementById(id).value=t;shSave();shDerived();}
   function shStop(id,which,f,v){const x=shFind(id);if(!x)return;x[which][f]=v;shSave();shDerived();}
-  function shStamp(id,which){
+  function shToggle(id,open){const x=shFind(id);if(x&&x.open!==open){x.open=open;shSave();}}
+  function shStamp(id,which,kind){   // kind 'ad' = arrive/depart, 'pump' = pump start/stop
     const x=shFind(id);if(!x)return;
-    const t=tripNowHHMM(),st=x[which],n=which==='pu'?'p':'d';
-    if(!st.arr){st.arr=t;document.getElementById('sh'+n+'A'+id).value=t;}
-    else if(!st.dep){st.dep=t;document.getElementById('sh'+n+'D'+id).value=t;}
-    else{tcToast('Arrive and Depart are already set');return;}
+    const t=shNowHHMM(),st=x[which],n=which==='pu'?'p':'d';
+    const a=kind==='pump'?'fs':'arr',b=kind==='pump'?'fe':'dep';
+    const ia=kind==='pump'?'S':'A',ib=kind==='pump'?'E':'D';
+    if(!st[a]){st[a]=t;document.getElementById('sh'+n+ia+id).value=t;}
+    else if(!st[b]){st[b]=t;document.getElementById('sh'+n+ib+id).value=t;}
+    else{tcToast(kind==='pump'?'Pump start and stop are already set':'Arrive and Depart are already set');return;}
     shSave();shDerived();
   }
-  function shAddState(){
-    shift.items.push({id:shift.nextId++,type:'state',odo:'',state:''});shSave();shRender();
-    const el=document.getElementById('shSO'+(shift.nextId-1));if(el)el.focus();
-  }
   function shAddLoad(){
-    shift.items.push({id:shift.nextId++,type:'load',pu:shBlankStop(),dr:shBlankStop()});shSave();shRender();
-    tcToast('Added Load '+shift.items.filter(x=>x.type==='load').length);
+    const id=shift.nextId++;
+    shift.items.push({id,type:'load',open:true,pu:shBlankStop(),dr:shBlankStop()});shSave();shRender();
+    tcToast('Added Load '+shift.items.length);
   }
   function shDelItem(id){
     const x=shFind(id);if(!x)return;
-    const has=x.type==='state'?(x.odo||x.state):[x.pu,x.dr].some(s=>Object.values(s).some(Boolean));
-    if(has&&!confirm('Delete this '+(x.type==='state'?'state change':'load')+'?'))return;
+    const has=[x.pu,x.dr].some(s=>Object.values(s).some(Boolean));
+    if(has&&!confirm('Delete this load?'))return;
     shift.items=shift.items.filter(y=>y.id!==id);shSave();shRender();
   }
   function shClear(){
-    if(!confirm('Clear this whole shift log (start, loads, states, end)?'))return;
-    const u=shift.unit;shift=shDefault();shift.unit=u;shSave();shRender();
-  }
-  function shSetUnit(u){
-    if(u===shift.unit)return;
-    const f=u==='km'?KM_PER_MI:1/KM_PER_MI,r6=n=>Math.round(n*1e6)/1e6;
-    const cv=v=>{const n=tcNum(v);return n===null?v:String(r6(n*f));};
-    shift.startOdo=cv(shift.startOdo);shift.endOdo=cv(shift.endOdo);
-    shift.items.forEach(x=>{if(x.type==='state')x.odo=cv(x.odo);else{x.pu.odo=cv(x.pu.odo);x.dr.odo=cv(x.dr.odo);}});
-    shift.unit=u;shSave();shRender();
+    if(!confirm('Clear this whole shift log (times and all loads)? Report header names are kept.'))return;
+    const u=shift.unit,tz=shift.tz;shift=shDefault();shift.unit=u;shift.tz=tz;shSave();shRender();
   }
 
   // ── rendering ──
+  function shNum(id,w,ph,val,call,extra){return `<input type="number" inputmode="decimal" step="any" min="0" class="oin" ${extra||''} placeholder="${ph}" value="${tcEsc(val)}" oninput="${call}">`;}
   function shStopHtml(x,which,title){
-    const st=x[which],n=which==='pu'?'p':'d',id=x.id;
-    const open=(st.fs||st.fe||(which==='dr'&&st.bbl))?' open':'';
-    const pu=which==='pu';
-    const levels=pu?`<div class="tg tg-head"><span>Tank level</span><span>Start</span><span>End</span><span>BBL</span><span></span></div>
-    <div class="tg tg-row">
-      <span class="pday">Level</span>
-      <input type="text" class="tin" placeholder="8'6&quot;" maxlength="14" value="${tcEsc(st.ls)}" aria-label="Level start" oninput="shStop(${id},'pu','ls',this.value)">
-      <input type="text" class="tin" placeholder="4'0&quot;" maxlength="14" value="${tcEsc(st.le)}" aria-label="Level end" oninput="shStop(${id},'pu','le',this.value)">
-      <input type="number" inputmode="decimal" step="any" min="0" class="oin" placeholder="BBL" value="${tcEsc(st.bbl)}" aria-label="BBL" oninput="shStop(${id},'pu','bbl',this.value)">
-      <span></span>
-    </div>`:'';
-    const bblCell=pu?'<span></span>':`<input type="number" inputmode="decimal" step="any" min="0" class="oin" placeholder="BBL" value="${tcEsc(st.bbl)}" aria-label="BBL" oninput="shStop(${id},'${which}','bbl',this.value)">`;
+    const st=x[which],n=which==='pu'?'p':'d',id=x.id,pu=which==='pu';
+    const lvl=pu?`<div class="lvl"><span class="pday">Level</span>
+      <span class="lv">start</span><input type="text" inputmode="decimal" class="tin" maxlength="5" placeholder="ft" value="${tcEsc(st.lsF)}" aria-label="Level start feet" oninput="shStop(${id},'pu','lsF',this.value)"><span class="lv">ft</span><input type="text" inputmode="decimal" class="tin" maxlength="5" placeholder="in" value="${tcEsc(st.lsI)}" aria-label="Level start inches" oninput="shStop(${id},'pu','lsI',this.value)"><span class="lv">in</span>
+      <span class="lv">end</span><input type="text" inputmode="decimal" class="tin" maxlength="5" placeholder="ft" value="${tcEsc(st.leF)}" aria-label="Level end feet" oninput="shStop(${id},'pu','leF',this.value)"><span class="lv">ft</span><input type="text" inputmode="decimal" class="tin" maxlength="5" placeholder="in" value="${tcEsc(st.leI)}" aria-label="Level end inches" oninput="shStop(${id},'pu','leI',this.value)"><span class="lv">in</span></div>`:'';
     return `<div class="tg tg-head"><span>${title}</span><span>Arrive</span><span>Depart</span><span>Odo ${shift.unit}</span><span></span></div>
     <div class="tg tg-row">
-      <input class="loc-input" type="text" maxlength="60" placeholder="Location (optional)" value="${tcEsc(st.name)}" oninput="shStop(${id},'${which}','name',this.value)">
+      <input class="loc-input" type="text" maxlength="60" placeholder="Location name" value="${tcEsc(st.name)}" oninput="shStop(${id},'${which}','name',this.value)">
       <input type="time" class="tin" id="sh${n}A${id}" value="${tcEsc(st.arr)}" aria-label="Arrive" oninput="shStop(${id},'${which}','arr',this.value)">
       <input type="time" class="tin" id="sh${n}D${id}" value="${tcEsc(st.dep)}" aria-label="Depart" oninput="shStop(${id},'${which}','dep',this.value)">
       <input type="number" inputmode="decimal" step="any" min="0" class="oin" id="sh${n}O${id}" placeholder="odo" value="${tcEsc(st.odo)}" aria-label="Odometer" oninput="shStop(${id},'${which}','odo',this.value)">
-      <button class="now-btn" onclick="shStamp(${id},'${which}')">Now</button>
+      <button class="now-btn" onclick="shStamp(${id},'${which}','ad')">Now</button>
     </div>
-    ${levels}
-    <details class="flowd"${open}><summary>Flow rate <span id="shF${n}${id}"></span></summary>
-      <div class="tg tg-head"><span>Pumping</span><span>Start</span><span>End</span><span>${pu?'':'BBL'}</span><span></span></div>
-      <div class="tg tg-row">
-        <span class="pday">${which==='pu'?'Loading':'Unloading'}</span>
-        <input type="time" class="tin" value="${tcEsc(st.fs)}" aria-label="Flow start" oninput="shStop(${id},'${which}','fs',this.value)">
-        <input type="time" class="tin" value="${tcEsc(st.fe)}" aria-label="Flow end" oninput="shStop(${id},'${which}','fe',this.value)">
-        ${bblCell}
-        <span></span>
-      </div>
-    </details>`;
+    <div class="tg tg-head"><span>${pu?'Loading':'Unloading'}</span><span>Pump start</span><span>Pump stop</span><span>BBL</span><span></span></div>
+    <div class="tg tg-row">
+      <span class="pday" id="shF${n}${id}" style="font-size:10px;font-weight:700;color:var(--green);line-height:1.3;"></span>
+      <input type="time" class="tin" id="sh${n}S${id}" value="${tcEsc(st.fs)}" aria-label="Pump start" oninput="shStop(${id},'${which}','fs',this.value)">
+      <input type="time" class="tin" id="sh${n}E${id}" value="${tcEsc(st.fe)}" aria-label="Pump stop" oninput="shStop(${id},'${which}','fe',this.value)">
+      <input type="number" inputmode="decimal" step="any" min="0" class="oin" placeholder="BBL" value="${tcEsc(st.bbl)}" aria-label="BBL" oninput="shStop(${id},'${which}','bbl',this.value)">
+      <button class="now-btn" onclick="shStamp(${id},'${which}','pump')">Now</button>
+    </div>
+    ${lvl}
+    <div class="lvl"><span class="pday">WO #</span><input type="text" class="tin wide" maxlength="20" value="${tcEsc(st.wo)}" aria-label="Work order number" oninput="shStop(${id},'${which}','wo',this.value)"><span class="lv">Ticket #</span><input type="text" class="tin wide" maxlength="20" value="${tcEsc(st.wt)}" aria-label="Water ticket number" oninput="shStop(${id},'${which}','wt',this.value)"></div>`;
   }
   function shRender(){
     document.getElementById('shDate').value=shift.date;
+    document.getElementById('shTStart').value=shift.tStart;
+    document.getElementById('shTEnd').value=shift.tEnd;
     document.getElementById('shUnitMi').classList.toggle('active',shift.unit==='mi');
     document.getElementById('shUnitKm').classList.toggle('active',shift.unit==='km');
-    document.getElementById('shStartHead').textContent='Start odometer '+shift.unit;
-    document.getElementById('shEndHead').textContent='End odometer '+shift.unit;
-    document.getElementById('shStartOdo').value=shift.startOdo;
-    document.getElementById('shStartState').value=shift.startState;
-    document.getElementById('shEndOdo').value=shift.endOdo;
+    const tzSel=document.getElementById('shTz');
+    if(!tzSel.options.length)tzSel.innerHTML=TRIP_TZS.map(z=>`<option value="${z[0]}">${z[1]}</option>`).join('');
+    tzSel.value=shift.tz;
+    ['Company','Driver','Client'].forEach(k=>{const el=document.getElementById('sh'+k);if(el)el.value=shMeta[k.toLowerCase()];});
     let n=0;
     document.getElementById('shItems').innerHTML=shift.items.length?shift.items.map(x=>{
-      if(x.type==='state'){
-        return `<div class="job"><div class="job-head"><span class="job-tag">STATE CHANGE</span><span class="job-dist" id="shSD${x.id}"></span><button class="del-btn" onclick="shDelItem(${x.id})">✕</button></div>
-        <div class="mrow">
-          <input type="number" inputmode="decimal" step="any" min="0" class="oin mo" id="shSO${x.id}" placeholder="Odometer at line" value="${tcEsc(x.odo)}" oninput="shItem(${x.id},'odo',this.value)">
-          <input type="text" class="tin ms" maxlength="2" placeholder="ST" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" value="${tcEsc(x.state)}" oninput="shItem(${x.id},'state',this.value,this)">
-          <span></span><span></span></div></div>`;
-      }
       n++;
-      return `<div class="job"><div class="job-head"><span class="job-tag">LOAD ${n}</span><span class="job-sub" id="shLS${x.id}"></span><span class="job-dist" id="shJD${x.id}"></span><button class="del-btn" onclick="shDelItem(${x.id})">✕</button></div>
-        ${shStopHtml(x,'pu','Pickup')}${shStopHtml(x,'dr','Drop-off')}</div>`;
-    }).join(''):'<div class="empty-note">Tap <b>+ Add Load</b> for each pickup + drop-off, and <b>+ Add State</b> when you cross a state line.</div>';
+      return `<details class="job shload"${x.open?' open':''} ontoggle="shToggle(${x.id},this.open)">
+        <summary class="job-head"><span class="job-tag">LOAD ${n}</span><span class="job-sub" id="shSN${x.id}"></span><span class="job-dist" id="shJD${x.id}"></span><button class="del-btn" onclick="event.preventDefault();event.stopPropagation();shDelItem(${x.id})">✕</button></summary>
+        ${shStopHtml(x,'pu','Pickup')}${shStopHtml(x,'dr','Drop-off')}</details>`;
+    }).join(''):'<div class="empty-note">Tap <b>+ Add Load</b> for each pickup + drop-off.</div>';
     shDerived();
   }
   function shFlowText(st){
     const f=shFlow(st);
-    if(f.bpm===null)return f.mins?'· '+Math.floor(f.mins/60)+'h '+f.mins%60+'m':'';
-    return '· '+f.bpm.toFixed(2)+' BBL/min · '+f.gpm.toFixed(1)+' GPM';
+    if(f.bpm===null)return f.mins?Math.floor(f.mins/60)+'h '+f.mins%60+'m pumping':'';
+    return f.bpm.toFixed(2)+' BBL/min<br>'+f.gpm.toFixed(1)+' GPM';
   }
   function shDerived(){
-    const c=shCalc(),u=shift.unit;
+    const lm=shLoadMiles(),u=shift.unit;
     shift.items.forEach(x=>{
-      if(x.type==='state'){
-        const el=document.getElementById('shSD'+x.id);if(!el)return;
-        const k='s'+x.id;
-        el.classList.toggle('bad',!!c.bad[k]);
-        el.textContent=c.bad[k]?'⚠ low':(c.seg[k]?'+'+tcFmt(c.seg[k].d)+' '+u:'');
-        return;
+      const sn=document.getElementById('shSN'+x.id);
+      if(sn)sn.textContent=[x.pu.name,x.dr.name].some(Boolean)?(x.pu.name||'?')+' → '+(x.dr.name||'?'):'';
+      const jd=document.getElementById('shJD'+x.id),j=lm[x.id];
+      if(jd){
+        jd.classList.toggle('bad',!!(j&&(j.bad||j.noStart)));
+        jd.textContent=!j?'':(j.bad?'⚠ check odo':(j.noStart?'set IFTA start':tcFmt(j.d)+' '+u));
       }
-      const ls=document.getElementById('shLS'+x.id);if(ls)ls.textContent=c.loadState[x.id]?'in '+c.loadState[x.id]:'';
-      const jd=document.getElementById('shJD'+x.id),j=c.jobs[x.id];
-      if(jd){jd.classList.toggle('bad',!!(j&&j.bad));jd.textContent=j?(j.bad?'⚠ check odo':tcFmt(j.d)+' '+u+' ('+shAlt(j.d)+')'):'';}
-      ['pu','dr'].forEach(w=>{const e=document.getElementById('shF'+(w==='pu'?'p':'d')+x.id);if(e)e.textContent=shFlowText(x[w]);});
+      ['pu','dr'].forEach(w=>{const e=document.getElementById('shF'+(w==='pu'?'p':'d')+x.id);if(e)e.innerHTML=shFlowText(x[w]);});
     });
-    const ed=document.getElementById('shEndDelta'),es=document.getElementById('shEndState');
-    if(ed){ed.classList.toggle('bad',!!c.bad.end);ed.textContent=c.bad.end?'⚠ lower than previous':(c.seg.end?'+'+tcFmt(c.seg.end.d)+' '+u:'');}
-    if(es)es.textContent=c.endState?'in '+c.endState:'';
-    const keys=Object.keys(c.by).sort((a,b)=>c.by[b]-c.by[a]);
-    const tot=document.getElementById('shTotals');
-    if(!keys.length){tot.innerHTML='<div class="empty-note">Enter your start odometer, state, and later readings — miles by state fill in here as you go.</div>';return;}
-    const row=(l,m,alt,strong)=>`<div class="row${alt?' alt':''}"><div class="st-name"${strong?' style="color:var(--accent)"':''}>${tcEsc(l)}</div><div class="ctrl"><div class="out-wrap"><span class="out green" style="font-size:15px">${tcFmt(m)} ${u}</span><span class="out-hint">${shAlt(m)}</span></div></div></div>`;
-    tot.innerHTML=row('Total driven',c.total,false,true)+keys.map((k,i)=>row(k==='—'?'No state':k,c.by[k],i%2===0,false)).join('');
+    document.getElementById('shHours').textContent=shHoursText()||'—';
+    const f=shIftaFirst();
+    document.getElementById('shStartNote').innerHTML=f===null
+      ?'Miles per load start from the <b>first odometer line on the IFTA tab</b> — enter your starting mileage there.'
+      :'Miles per load: first load counts from your IFTA start ('+tcFmt(f)+' '+u+'); each next load counts from the previous load\'s drop-off odometer.';
   }
 
-  // ── printable report ──
+  // ── printable report (laid out like the paper driver log) ──
   function shReportHtml(){
-    const c=shCalc(),u=shift.unit,E=tcEsc;
+    const E=tcEsc,u=shift.unit,t12=t=>tripFmt12(t)||'';
     const truck=(document.getElementById('fTruck')||{}).value||'',trailer=(document.getElementById('fTrailer')||{}).value||'';
-    const d=shift.date?payParse(shift.date).toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'}):'';
-    const t12=t=>tripFmt12(t)||'—';
-    const fm=m=>m===null||m===undefined?'—':tcFmt(m)+' '+u;
-    let h=`<h1>Shift Report</h1><div class="pr-meta">${E(d)}${truck?' · Truck '+E(truck):''}${trailer?' · Trailer '+E(trailer):''}</div>`;
-    h+=`<h2>Summary</h2><table><tr><th>Start odometer</th><th>End odometer</th><th>Total driven</th></tr><tr><td>${fm(tcNum(shift.startOdo))}</td><td>${fm(tcNum(shift.endOdo))}</td><td><b>${fm(c.total)}</b> (${shAlt(c.total)})</td></tr></table>`;
-    const keys=Object.keys(c.by).sort((a,b)=>c.by[b]-c.by[a]);
-    h+=`<h2>IFTA — miles by state</h2>`+(keys.length?`<table><tr><th>State</th><th>${u}</th><th>${shOther()}</th></tr>${keys.map(k=>`<tr><td>${E(k==='—'?'No state':k)}</td><td>${tcFmt(c.by[k])}</td><td>${shAlt(c.by[k]).split(' ')[0]}</td></tr>`).join('')}<tr><td><b>Total</b></td><td><b>${tcFmt(c.total)}</b></td><td><b>${shAlt(c.total).split(' ')[0]}</b></td></tr></table>`:'<p>No mileage entered.</p>');
-    const sc=shift.items.filter(x=>x.type==='state'&&/^[A-Z]{2}$/.test(x.state));
-    if(sc.length)h+=`<h2>State changes</h2><table><tr><th>#</th><th>Entered</th><th>Odometer (${u})</th></tr>${sc.map((x,i)=>`<tr><td>${i+1}</td><td>${E(x.state)}</td><td>${E(x.odo||'—')}</td></tr>`).join('')}</table>`;
-    const loads=shift.items.filter(x=>x.type==='load');
-    h+=`<h2>Loads</h2>`;
-    if(!loads.length)h+='<p>No loads entered.</p>';
-    loads.forEach((x,i)=>{
-      const j=c.jobs[x.id];
-      h+=`<h3>Load ${i+1}${c.loadState[x.id]?' · '+E(c.loadState[x.id]):''}${j&&!j.bad?' · '+tcFmt(j.d)+' '+u+' ('+shAlt(j.d)+')':''}</h3>
-      <table><tr><th></th><th>Location</th><th>Arrive</th><th>Depart</th><th>Odo (${u})</th><th>Level start</th><th>Level end</th><th>BBL</th><th>Pump start</th><th>Pump end</th><th>BBL/min</th><th>GPM</th></tr>
-      ${[['Pickup',x.pu],['Drop-off',x.dr]].map(([l,s])=>{const f=shFlow(s);return `<tr><td><b>${l}</b></td><td>${E(s.name||'—')}</td><td>${t12(s.arr)}</td><td>${t12(s.dep)}</td><td>${E(s.odo||'—')}</td><td>${E(s.ls||'—')}</td><td>${E(s.le||'—')}</td><td>${E(s.bbl||'—')}</td><td>${t12(s.fs)}</td><td>${t12(s.fe)}</td><td>${f.bpm===null?'—':f.bpm.toFixed(2)}</td><td>${f.gpm===null?'—':f.gpm.toFixed(1)}</td></tr>`;}).join('')}</table>`;
+    const d=shift.date?payParse(shift.date).toLocaleDateString(undefined,{weekday:'short',year:'numeric',month:'short',day:'numeric'}):'';
+    const lm=shLoadMiles(),seg=milesSegments();
+    const keys=Object.keys(seg.by).sort((a,b)=>seg.by[b]-seg.by[a]);
+    const f=shIftaFirst(),l=shIftaLast();
+    const lvl=(F,I)=>(F||I)?(E(F||'0')+"' "+E(I||'0')+'"'):'';
+    let h=`${shMeta.company?`<div class="pr-co">${E(shMeta.company)}</div>`:''}<h1>DRIVER LOCATION &amp; TIME LOG</h1>
+    <table class="pr-head"><tr><th>Driver</th><td>${E(shMeta.driver)}</td><th>Date</th><td>${E(d)}</td></tr>
+    <tr><th>Truck / Trailer</th><td>${E(truck)}${trailer?' / '+E(trailer):''}</td><th>Client</th><td>${E(shMeta.client)}</td></tr></table>
+    <table class="pr-log"><tr><th>#</th><th>Location / Site / Well Name</th><th>${u==='mi'?'Miles':'KM'}<br>per load</th><th>WO#</th><th>Water<br>Ticket #</th><th>Arrival<br>Time</th><th>Departure<br>Time</th><th>Pump<br>start – stop</th><th>Odo</th><th># of BBLs</th></tr>`;
+    shift.items.forEach((x,i)=>{
+      const j=lm[x.id],mi=j&&j.d!==undefined?tcFmt(j.d):'';
+      const row=(s,num,span)=>{
+        const pump=(s.fs||s.fe)?t12(s.fs)+' – '+t12(s.fe):'';
+        const fl=shFlow(s),rate=fl.bpm!==null?`<div class="pr-sm">${fl.bpm.toFixed(2)} BBL/min · ${fl.gpm.toFixed(1)} GPM</div>`:'';
+        const lv=(num&&(s.lsF||s.lsI||s.leF||s.leI))?`<div class="pr-sm">Level ${lvl(s.lsF,s.lsI)} → ${lvl(s.leF,s.leI)}</div>`:'';
+        return `<tr>${num?`<td rowspan="2" class="pr-n">${i+1}</td>`:''}<td>${E(s.name)}${lv}</td>${span?`<td rowspan="2" class="pr-m">${mi}</td>`:''}<td>${E(s.wo)}</td><td>${E(s.wt)}</td><td>${t12(s.arr)}</td><td>${t12(s.dep)}</td><td>${pump}${rate}</td><td>${E(s.odo)}</td><td>${E(s.bbl)}</td></tr>`;
+      };
+      h+=row(x.pu,true,true)+row(x.dr,false,false);
     });
-    h+=`<div class="pr-foot">Tank Calc · printed ${E(new Date().toLocaleString())}</div>`;
+    if(!shift.items.length)h+='<tr><td colspan="10" style="text-align:center;height:30px;">No loads entered</td></tr>';
+    h+=`</table>
+    <table class="pr-foot-t"><tr><th>Start Time</th><td>${t12(shift.tStart)}</td><th>End Time</th><td>${t12(shift.tEnd)}</td><th>Hours worked</th><td>${E(shHoursText())}</td></tr>
+    <tr><th>Starting mileage</th><td>${f===null?'':tcFmt(f)+' '+u}</td><th>Ending mileage</th><td>${l===null?'':tcFmt(l)+' '+u}</td><th>Total miles</th><td><b>${seg.total?tcFmt(seg.total)+' '+u:''}</b></td></tr>
+    <tr><th>Miles by state</th><td colspan="5">${keys.length?keys.map(k=>E(k==='—'?'No state':k)+': <b>'+tcFmt(seg.by[k])+'</b> '+u).join(' &nbsp;·&nbsp; '):''}</td></tr></table>
+    <div class="pr-sig"><span>Driver Signature: ______________________________________</span><span>Date: ________________</span></div>`;
     return h;
   }
   function shPrint(){
@@ -2534,7 +2570,7 @@
   }
 
   // ── INIT ──────────────────────────────────────────────
-  renderModules();shRender();
+  renderModules();shSyncUnit();shRender();
   flowLoadIds();
   renderInputs();   // build initial ft/in fields
   calc();
