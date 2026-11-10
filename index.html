@@ -268,6 +268,14 @@
     .tin::-webkit-calendar-picker-indicator, .time-input::-webkit-calendar-picker-indicator { display:none; }
     .tin[type=time] { font-size:11.5px; letter-spacing:-.2px; padding:7px 0; }
     #shTStart, #shTEnd, #tab-pay .time-input { width:118px !important; }
+    .settings-card textarea.settings-input { width:100%; box-sizing:border-box; }
+    #shPreview { display:none; position:fixed; inset:0; background:#000; z-index:200; }
+    #shPreview .pv-bar { position:sticky; top:0; display:flex; gap:8px; align-items:center; justify-content:space-between; padding:8px 10px; background:#111a22; border-bottom:1px solid var(--border); }
+    #shPreview .pv-bar button { padding:9px 12px; border-radius:8px; border:1px solid var(--accent); background:transparent; color:var(--accent); font-weight:800; font-size:12px; font-family:inherit; }
+    #shPreview .pv-bar span { font-size:10px; letter-spacing:1px; color:var(--muted); font-weight:700; text-align:center; }
+    #shPreview .pv-scroll { position:absolute; top:52px; left:0; right:0; bottom:0; overflow:auto; -webkit-overflow-scrolling:touch; }
+    #shPreview img { display:block; width:100%; background:#fff; }
+    #shPreview img.zoom { width:260%; max-width:none; }
     #tcToast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:#1c2733; border:1px solid var(--accent); color:var(--text); padding:10px 16px; border-radius:10px; font-size:12px; font-weight:700; opacity:0; pointer-events:none; transition:opacity .2s; z-index:50; max-width:90vw; text-align:center; }
     #tcToast.show { opacity:1; }
 
@@ -604,6 +612,8 @@
     <div class="sec-head green">Miles by State <button class="clr-btn" onclick="clearMiles()">Clear All</button></div>
     <div id="mTotals"></div>
   </div>
+  <button class="block-btn" style="margin-top:12px;" onclick="shLogDay()">✔ Log Day</button>
+  <div class="trip-note" style="text-align:center;">Files today's IFTA miles and your Shift into the saved day log (Settings).</div>
 </div>
 
 <!-- ═══════════════════════════════ -->
@@ -671,7 +681,7 @@
     <div class="sec-head green">Shift Log <button class="clr-btn" onclick="shClear()">Clear</button></div>
     <div class="row">
       <div class="lbl">Date</div>
-      <div class="ctrl"><input type="date" class="time-input" id="shDate" style="width:150px;" oninput="shTop('date',this.value)" /></div>
+      <div class="ctrl" style="gap:6px;"><input type="date" class="time-input" id="shDate" style="width:136px;" oninput="shTop('date',this.value)" /><button class="stamp-btn" onclick="shToday()">Today</button></div>
     </div>
     <div class="row alt">
       <div class="lbl">Shift start</div>
@@ -706,23 +716,15 @@
   </div>
 
   <div class="sheet gap-top">
-    <div class="sec-head gold">Report Header <span style="color:var(--muted);letter-spacing:1px;text-transform:none;font-size:9px;">saved, not cleared</span></div>
-    <div class="row">
-      <div class="lbl">Company<small>optional</small></div>
-      <div class="ctrl"><input class="loc-input fin" id="shCompany" type="text" maxlength="60" placeholder="Company name" oninput="shMetaInput()" /></div>
-    </div>
-    <div class="row alt">
-      <div class="lbl">Driver</div>
-      <div class="ctrl"><input class="loc-input fin" id="shDriver" type="text" maxlength="40" placeholder="Driver name" oninput="shMetaInput()" /></div>
-    </div>
-    <div class="row">
-      <div class="lbl">Client<small>optional</small></div>
-      <div class="ctrl"><input class="loc-input fin" id="shClient" type="text" maxlength="60" placeholder="Client / route" oninput="shMetaInput()" /></div>
-    </div>
-    <div class="trip-note">Truck and Trailer ID come from the Flow tab. Miles by state come from the IFTA tab.</div>
+    <div class="sec-head gold">Day Summary</div>
+    <div id="shSum"></div>
   </div>
 
-  <button class="block-btn" style="margin-top:12px;" onclick="shPrint()">🖨 Print / Save PDF Report</button>
+  <button class="block-btn" style="margin-top:12px;" onclick="shSaveImage()">🖼 Save Image Report</button>
+  <div class="btn-pair">
+    <button class="block-btn green" onclick="shLogDay()">✔ Log Day</button>
+    <button class="block-btn green" onclick="shPrint()">🖨 Print</button>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════ -->
@@ -733,7 +735,7 @@
     <div class="sec-head green">Clock</div>
     <div class="row">
       <div class="lbl">Shift date<small>the day you clock ON</small></div>
-      <div class="ctrl"><input type="date" class="time-input" id="payDate" style="width:150px;" oninput="payDateTouched=true" /></div>
+      <div class="ctrl" style="gap:6px;"><input type="date" class="time-input" id="payDate" style="width:136px;" oninput="payDateTouched=true" /><button class="stamp-btn" onclick="payToday()">Today</button></div>
     </div>
     <div class="btn-pair" style="padding:10px 12px;margin-top:0;">
       <button class="block-btn" id="payOnBtn" onclick="payOn()">▶ ON</button>
@@ -825,6 +827,54 @@
 <div class="tab-panel" id="tab-settings">
 
   <div class="settings-card">
+    <div class="sec-head orange">Profile &amp; Report Header</div>
+    <div class="settings-field">
+      <div class="settings-lbl">Driver / ID<br><span style="font-size:9px;color:var(--muted);">Prints on the report and names your backup</span></div>
+      <input class="settings-input" id="stDriver" type="text" maxlength="40" placeholder="Name or ID" oninput="stMeta('driver',this.value)" />
+    </div>
+    <div class="settings-field" style="background:var(--row-alt);">
+      <div class="settings-lbl">Company<br><span style="font-size:9px;color:var(--muted);">Optional</span></div>
+      <input class="settings-input" id="stCompany" type="text" maxlength="60" placeholder="Company name" oninput="stMeta('company',this.value)" />
+    </div>
+    <div class="settings-field">
+      <div class="settings-lbl">Client<br><span style="font-size:9px;color:var(--muted);">Default client / route</span></div>
+      <input class="settings-input" id="stClient" type="text" maxlength="60" placeholder="Client" oninput="stMeta('client',this.value)" />
+    </div>
+    <label class="mod-row alt"><input type="checkbox" id="stPerLoad" onchange="stMeta('perLoad',this.checked)"><span>Client changes per load</span></label>
+    <div class="settings-field" id="stClientsRow" style="display:none;">
+      <div class="settings-lbl">Clients<br><span style="font-size:9px;color:var(--muted);">One per line. Shows a pick-list at the bottom of each load.</span></div>
+      <textarea class="settings-input" id="stClients" rows="4" style="resize:vertical;" placeholder="Client A&#10;Client B" oninput="stMeta('clients',this.value)"></textarea>
+    </div>
+  </div>
+
+  <div class="settings-card" style="margin-top:12px;">
+    <div class="sec-head orange">Pay Rates</div>
+    <div class="settings-field">
+      <div class="settings-lbl">Barrel rate<br><span style="font-size:9px;color:var(--muted);">$ per BBL the company is paid</span></div>
+      <input class="settings-input" id="stRate" type="number" inputmode="decimal" step="any" min="0" placeholder="1.60" oninput="stMeta('rate',this.value)" />
+    </div>
+    <div class="settings-field" style="background:var(--row-alt);">
+      <div class="settings-lbl">Your share %<br><span style="font-size:9px;color:var(--muted);">Of the load</span></div>
+      <input class="settings-input" id="stShare" type="number" inputmode="decimal" step="any" min="0" max="100" placeholder="30" oninput="stMeta('share',this.value)" />
+    </div>
+    <div class="settings-field">
+      <div class="settings-lbl">Trailer capacity<br><span style="font-size:9px;color:var(--muted);">BBL (for average fill)</span></div>
+      <input class="settings-input" id="stCap" type="number" inputmode="decimal" step="any" min="0" placeholder="165" oninput="stMeta('cap',this.value)" />
+    </div>
+  </div>
+
+  <div class="settings-card" style="margin-top:12px;">
+    <div class="sec-head orange">Backup &amp; Logged Days</div>
+    <div style="padding:10px 12px;"><div class="btn-pair" style="margin-top:0;">
+      <button class="block-btn" onclick="stExport()">⬇ Export Backup</button>
+      <button class="block-btn green" onclick="document.getElementById('stImportFile').click()">⬆ Import</button>
+    </div>
+    <input type="file" id="stImportFile" accept=".json,application/json" style="display:none" onchange="stImportFile(this.files)" /></div>
+    <div class="trip-note" id="stDataNote"></div>
+    <div id="stDays"></div>
+  </div>
+
+  <div class="settings-card" style="margin-top:12px;">
     <div class="sec-head orange">Tabs / Modules</div>
     <div id="modList"></div>
     <div class="trip-note">Uncheck a tool to remove its tab. Your saved data stays; check it again to bring the tab back. Settings always stays.</div>
@@ -901,6 +951,7 @@
     if(t==='trip')renderTrip();
     if(t==='pay')renderPay();
     if(t==='shift')shRender();
+    if(t==='settings')stRender();
     tabIntoView(TAB_IDS.indexOf(t));
     if(t==='settings')loadGitHubSettings();
   }
@@ -1746,16 +1797,16 @@
   }
   function setTripTz(v){trip.tz=v;tripSave();}
   function tripBlank(id){return {id,name:null,arr:'',dep:'',odo:''};}
-  function tripDefault(){return {v:2,name:'',date:tcToday(),unit:'mi',group:false,tz:'',nextId:3,stops:[tripBlank(1),tripBlank(2)]};}
+  function tripDefault(){return {v:3,name:'',date:tcToday(),unit:'mi',group:true,tz:'',nextId:3,stops:[tripBlank(1),tripBlank(2)]};}
   let trip=tcLoad(LS_TRIP,tripDefault);
   (function normalizeTrip(){
-    const wasOld=(trip.v||1)<2;
+    const wasOld=(trip.v||1)<3;   // v3: grouped is the default (one-time flip; your later choice is kept)
     let stops=Array.isArray(trip.stops)?trip.stops.filter(s=>s&&typeof s==='object'):[];
     // v1 had a single `time` per stop → it becomes the arrival time
     stops=stops.map((s,i)=>({id:s.id||(i+1),name:s.name||null,arr:s.arr!=null?String(s.arr):(s.time?String(s.time):''),dep:s.dep?String(s.dep):'',odo:s.odo==null?'':String(s.odo)}));
     let maxId=stops.reduce((m,s)=>Math.max(m,s.id),0);
     while(stops.length<2) stops.push(tripBlank(++maxId));
-    trip.group=trip.group===true;
+    trip.group=((trip.v||1)<3)?true:trip.group===true;
     if(!TRIP_TZS.some(z=>z[0]===trip.tz)) trip.tz='';
     if(trip.group&&stops.length%2) stops.push(tripBlank(++maxId));   // keep pickup/drop pairs complete
     trip.stops=stops;
@@ -1763,7 +1814,7 @@
     if(trip.unit!=='mi'&&trip.unit!=='km') trip.unit='mi';
     if(!trip.date) trip.date=tcToday();
     if(typeof trip.name!=='string') trip.name='';
-    trip.v=2;
+    trip.v=3;
     if(wasOld) tcSave(LS_TRIP,trip);
   })();
   let tripEditing=-1;
@@ -2048,18 +2099,21 @@
   function payNowHHMM(){const d=new Date();return tcPad(d.getHours())+':'+tcPad(d.getMinutes());}
   function payOpen(){return paySched.shifts.find(s=>s.on&&!s.off)||null;}
 
+  function payToday(){payDateTouched=false;document.getElementById('payDate').value=tcToday();}
   function payOn(){
     const open=payOpen();
     if(open){tcToast('Already ON since '+payTimeLabel(open.on)+' — tap OFF first');return;}
     const date=document.getElementById('payDate').value||tcToday();
     paySched.shifts.push({id:Date.now(),date,on:payNowHHMM(),off:''});
     paySave();renderPay();tcToast('Clocked ON '+payTimeLabel(payNowHHMM()));
+    if(typeof shFromPay==='function')shFromPay(date,payNowHHMM(),'');
   }
   function payOff(){
     const open=payOpen();
     if(!open){tcToast('Not clocked ON');return;}
     open.off=payNowHHMM();
     paySave();renderPay();
+    if(typeof shFromPay==='function')shFromPay(open.date,open.on,open.off);
     tcToast('Clocked OFF — '+payHrs(payMins(open))+' h');
   }
   function payAddManual(){
@@ -2071,6 +2125,7 @@
   function payEdit(id,field,val){
     const s=paySched.shifts.find(x=>x.id===id);if(!s)return;
     s[field]=val;paySave();renderPay();
+    if(typeof shFromPay==='function'&&s.date===shift.date&&s.on)shFromPay(s.date,s.on,s.off);
   }
   function payDelete(id){
     const s=paySched.shifts.find(x=>x.id===id);if(!s)return;
@@ -2150,7 +2205,7 @@
   function shBlankStop(){return {name:'',arr:'',dep:'',odo:'',fs:'',fe:'',bbl:'',wo:'',wt:'',lsF:'',lsI:'',leF:'',leI:''};}
   function shDefault(){return {v:2,unit:miles.unit,tz:'',date:tcToday(),tStart:'',tEnd:'',nextId:1,items:[]};}
   let shift=tcLoad(LS_SHIFT,shDefault);
-  let shMeta=tcLoad(LS_SHMETA,()=>({v:1,company:'',driver:'',client:''}));
+  let shMeta=tcLoad(LS_SHMETA,()=>({v:1,company:'',driver:'',client:'',perLoad:false,clients:'',rate:'',share:'30',cap:''}));
   (function normalizeShift(){
     const str=v=>(v===null||v===undefined)?'':String(v);
     const time=v=>/^\d{1,2}:\d{2}$/.test(str(v))?str(v):'';
@@ -2172,20 +2227,24 @@
     // v1 "state change" lines are gone (IFTA tab owns states); loads are kept
     shift.items=(Array.isArray(shift.items)?shift.items:[]).filter(x=>x&&x.type==='load').map((x,i)=>{
       const id=Number.isInteger(x.id)?x.id:(i+1);maxId=Math.max(maxId,id);
-      return {id,type:'load',open:x.open!==false,pu:stop(x.pu),dr:stop(x.dr)};
+      const pu=stop(x.pu),dr=stop(x.dr);
+      return {id,type:'load',open:x.open!==false,client:str(x.client).slice(0,60),
+        wo:(str(x.wo)||pu.wo||dr.wo).slice(0,20),wt:(str(x.wt)||pu.wt||dr.wt).slice(0,20),pu,dr};
     });
     shift.nextId=Math.max(Number.isInteger(shift.nextId)?shift.nextId:1,maxId+1);
     delete shift.startOdo;delete shift.endOdo;delete shift.startState;
     shift.v=2;
-    shMeta.company=str(shMeta.company);shMeta.driver=str(shMeta.driver);shMeta.client=str(shMeta.client);shMeta.v=1;
+    ['company','driver','client','clients','rate','cap'].forEach(k=>{shMeta[k]=str(shMeta[k]);});
+    shMeta.share=(shMeta.share===undefined||shMeta.share===null||shMeta.share==='')?'30':str(shMeta.share);
+    shMeta.perLoad=shMeta.perLoad===true;shMeta.v=1;
   })();
   function shSave(){tcSave(LS_SHIFT,shift);}
   function shFind(id){return shift.items.find(x=>x.id===id);}
-  function shMetaInput(){
-    shMeta.company=document.getElementById('shCompany').value;
-    shMeta.driver=document.getElementById('shDriver').value;
-    shMeta.client=document.getElementById('shClient').value;
-    tcSave(LS_SHMETA,shMeta);
+  function shMetaSave(){tcSave(LS_SHMETA,shMeta);}
+  function shClients(){
+    const seen=new Set(),out=[];
+    [shMeta.client].concat(String(shMeta.clients||'').split('\n')).forEach(c=>{c=(c||'').trim();if(c&&!seen.has(c)){seen.add(c);out.push(c);}});
+    return out;
   }
 
   // clock (time zone for the Now buttons on this tab)
@@ -2246,11 +2305,37 @@
     });
     return out;
   }
+  function shBblOf(x){const a=tcNum(x.pu.bbl),b=tcNum(x.dr.bbl);return a!==null?a:(b!==null?b:0);}
+  function shMoney(n){return '$'+n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function shAfterLast(){   // miles from the last drop-off to the end of the day (parking), kept separate
+    let last=null;shift.items.forEach(x=>{const n=tcNum(x.dr.odo);if(n!==null)last=n;});
+    const end=shIftaLast();
+    return (last!==null&&end!==null&&end>last)?end-last:null;
+  }
+  function shTotals(){
+    const bbl=shift.items.reduce((t,x)=>t+shBblOf(x),0),rate=tcNum(shMeta.rate),share=tcNum(shMeta.share);
+    const gross=(rate!==null&&rate>0)?bbl*rate:null;
+    return {loads:shift.items.length,bbl,rate,share:share===null?30:share,gross,mine:gross===null?null:gross*(share===null?30:share)/100,after:shAfterLast()};
+  }
   function shAlt(m){return shift.unit==='mi'?tcFmt(m*KM_PER_MI)+' km':tcFmt(m/KM_PER_MI)+' mi';}
 
   // ── edits ──
-  function shTop(f,v){shift[f]=v;shSave();shDerived();}
-  function shNowTop(f,id){const t=shNowHHMM();shift[f]=t;document.getElementById(id).value=t;shSave();shDerived();}
+  function shToday(){shift.date=tcToday();shSave();document.getElementById('shDate').value=shift.date;shToPay();}
+  function shTop(f,v){shift[f]=v;shSave();shDerived();if(f==='tStart'||f==='tEnd'||f==='date')shToPay();}
+  function shNowTop(f,id){const t=shNowHHMM();shift[f]=t;document.getElementById(id).value=t;shSave();shDerived();shToPay();}
+  // ── Shift start/end ↔ Pay tab clock stay in step (matched by date) ──
+  function shToPay(){
+    if(!shift.tStart||typeof paySched==='undefined')return;
+    let e=paySched.shifts.find(x=>x.date===shift.date);
+    if(!e){e={id:Date.now(),date:shift.date,on:'',off:''};paySched.shifts.push(e);}
+    e.on=shift.tStart;e.off=shift.tEnd;paySave();renderPay();
+  }
+  function shFromPay(date,on,off){
+    const empty=!shift.items.length&&!shift.tStart&&!shift.tEnd;
+    if(shift.date!==date){if(!empty)return;shift.date=date;}
+    shift.tStart=on||'';shift.tEnd=off||'';shSave();
+    if(document.getElementById('shTStart'))shRender();
+  }
   function shStop(id,which,f,v){const x=shFind(id);if(!x)return;x[which][f]=v;shSave();shDerived();}
   function shToggle(id,open){const x=shFind(id);if(x&&x.open!==open){x.open=open;shSave();}}
   function shStamp(id,which,kind){   // kind 'ad' = arrive/depart, 'pump' = pump start/stop
@@ -2265,7 +2350,7 @@
   }
   function shAddLoad(){
     const id=shift.nextId++;
-    shift.items.push({id,type:'load',open:true,pu:shBlankStop(),dr:shBlankStop()});shSave();shRender();
+    shift.items.push({id,type:'load',open:true,client:'',wo:'',wt:'',pu:shBlankStop(),dr:shBlankStop()});shSave();shRender();
     tcToast('Added Load '+shift.items.length);
   }
   function shDelItem(id){
@@ -2275,7 +2360,7 @@
     shift.items=shift.items.filter(y=>y.id!==id);shSave();shRender();
   }
   function shClear(){
-    if(!confirm('Clear this whole shift log (times and all loads)? Report header names are kept.'))return;
+    if(!confirm('Clear this whole shift log (times and all loads)? Your name, client and rate settings are kept.'))return;
     const u=shift.unit,tz=shift.tz;shift=shDefault();shift.unit=u;shift.tz=tz;shSave();shRender();
   }
 
@@ -2302,10 +2387,19 @@
       <input type="number" inputmode="decimal" step="any" min="0" class="oin" placeholder="BBL" value="${tcEsc(st.bbl)}" aria-label="BBL" oninput="shStop(${id},'${which}','bbl',this.value)">
       <button class="now-btn" onclick="shStamp(${id},'${which}','pump')">Now</button>
     </div>
-    ${lvl}
-    <div class="lvl"><span class="pday">WO #</span><input type="text" class="tin wide" maxlength="20" value="${tcEsc(st.wo)}" aria-label="Work order number" oninput="shStop(${id},'${which}','wo',this.value)"><span class="lv">Ticket #</span><input type="text" class="tin wide" maxlength="20" value="${tcEsc(st.wt)}" aria-label="Water ticket number" oninput="shStop(${id},'${which}','wt',this.value)"></div>`;
+    ${lvl}`;
+  }
+  function shItemSet(id,f,v){const x=shFind(id);if(!x)return;x[f]=v;shSave();}
+  function shLoadBottomHtml(x){
+    return `<div class="lvl"><span class="pday">WO #</span><input type="text" class="tin wide" maxlength="20" value="${tcEsc(x.wo)}" aria-label="Work order number" oninput="shItemSet(${x.id},'wo',this.value)"><span class="lv">Ticket #</span><input type="text" class="tin wide" maxlength="20" value="${tcEsc(x.wt)}" aria-label="Water ticket number" oninput="shItemSet(${x.id},'wt',this.value)"></div>`;
+  }
+  function shClientHtml(x){
+    if(!shMeta.perLoad)return '';
+    const opts=shClients();if(x.client&&!opts.includes(x.client))opts.push(x.client);
+    return `<div class="lvl"><span class="pday">Client</span><select class="sel" style="flex:1;max-width:none;" aria-label="Client for this load" onchange="shItemSet(${x.id},'client',this.value)"><option value="">${opts.length?'Select client':'Add clients in Settings'}</option>${opts.map(c=>`<option value="${tcEsc(c)}"${x.client===c?' selected':''}>${tcEsc(c)}</option>`).join('')}</select></div>`;
   }
   function shRender(){
+    if(!shift.items.length&&!shift.tStart&&!shift.tEnd&&shift.date!==tcToday()){shift.date=tcToday();shSave();}   // an untouched log always opens on today
     document.getElementById('shDate').value=shift.date;
     document.getElementById('shTStart').value=shift.tStart;
     document.getElementById('shTEnd').value=shift.tEnd;
@@ -2314,13 +2408,12 @@
     const tzSel=document.getElementById('shTz');
     if(!tzSel.options.length)tzSel.innerHTML=TRIP_TZS.map(z=>`<option value="${z[0]}">${z[1]}</option>`).join('');
     tzSel.value=shift.tz;
-    ['Company','Driver','Client'].forEach(k=>{const el=document.getElementById('sh'+k);if(el)el.value=shMeta[k.toLowerCase()];});
     let n=0;
     document.getElementById('shItems').innerHTML=shift.items.length?shift.items.map(x=>{
       n++;
       return `<details class="job shload"${x.open?' open':''} ontoggle="shToggle(${x.id},this.open)">
         <summary class="job-head"><span class="job-tag">LOAD ${n}</span><span class="job-sub" id="shSN${x.id}"></span><span class="job-dist" id="shJD${x.id}"></span><button class="del-btn" onclick="event.preventDefault();event.stopPropagation();shDelItem(${x.id})">✕</button></summary>
-        ${shStopHtml(x,'pu','Pickup')}${shStopHtml(x,'dr','Drop-off')}</details>`;
+        ${shStopHtml(x,'pu','Pickup')}${shStopHtml(x,'dr','Drop-off')}${shLoadBottomHtml(x)}${shClientHtml(x)}</details>`;
     }).join(''):'<div class="empty-note">Tap <b>+ Add Load</b> for each pickup + drop-off.</div>';
     shDerived();
   }
@@ -2342,6 +2435,15 @@
       ['pu','dr'].forEach(w=>{const e=document.getElementById('shF'+(w==='pu'?'p':'d')+x.id);if(e)e.innerHTML=shFlowText(x[w]);});
     });
     document.getElementById('shHours').textContent=shHoursText()||'—';
+    const T=shTotals(),sum=document.getElementById('shSum');
+    if(sum){
+      const r=(l,v,alt)=>`<div class="row${alt?' alt':''}"><div class="st-name">${l}</div><div class="ctrl"><span class="out green" style="font-size:15px">${v}</span></div></div>`;
+      sum.innerHTML=r('Loads',String(T.loads),false)+r('Total BBL',tcFmt(T.bbl),true)
+        +(tcNum(shMeta.cap)>0&&T.loads?r('Average trailer fill',Math.round(T.bbl/T.loads/tcNum(shMeta.cap)*100)+'%',false):'')
+        +(T.after!==null?r('Miles after last load',tcFmt(T.after)+' '+u,false):'')
+        +(T.gross!==null?r('Gross @ '+shMoney(T.rate)+'/bbl',shMoney(T.gross),true)+r('Your share ('+tcFmt(T.share).replace(/\.0$/,'')+'%)',shMoney(T.mine),false)
+          :'<div class="trip-note" style="border-top:1px solid var(--border);">Set a barrel rate in Settings to see earnings.</div>');
+    }
     const f=shIftaFirst();
     document.getElementById('shStartNote').innerHTML=f===null
       ?'Miles per load start from the <b>first odometer line on the IFTA tab</b> — enter your starting mileage there.'
@@ -2359,7 +2461,7 @@
     const lvl=(F,I)=>(F||I)?(E(F||'0')+"' "+E(I||'0')+'"'):'';
     let h=`${shMeta.company?`<div class="pr-co">${E(shMeta.company)}</div>`:''}<h1>DRIVER LOCATION &amp; TIME LOG</h1>
     <table class="pr-head"><tr><th>Driver</th><td>${E(shMeta.driver)}</td><th>Date</th><td>${E(d)}</td></tr>
-    <tr><th>Truck / Trailer</th><td>${E(truck)}${trailer?' / '+E(trailer):''}</td><th>Client</th><td>${E(shMeta.client)}</td></tr></table>
+    <tr><th>Truck / Trailer</th><td>${E(truck)}${trailer?' / '+E(trailer):''}</td><th>Client</th><td>${E(shMeta.perLoad?'(per load)':shMeta.client)}</td></tr></table>
     <table class="pr-log"><tr><th>#</th><th>Location / Site / Well Name</th><th>${u==='mi'?'Miles':'KM'}<br>per load</th><th>WO#</th><th>Water<br>Ticket #</th><th>Arrival<br>Time</th><th>Departure<br>Time</th><th>Pump<br>start – stop</th><th>Odo</th><th># of BBLs</th></tr>`;
     shift.items.forEach((x,i)=>{
       const j=lm[x.id],mi=j&&j.d!==undefined?tcFmt(j.d):'';
@@ -2367,7 +2469,7 @@
         const pump=(s.fs||s.fe)?t12(s.fs)+' – '+t12(s.fe):'';
         const fl=shFlow(s),rate=fl.bpm!==null?`<div class="pr-sm">${fl.bpm.toFixed(2)} BBL/min · ${fl.gpm.toFixed(1)} GPM</div>`:'';
         const lv=(num&&(s.lsF||s.lsI||s.leF||s.leI))?`<div class="pr-sm">Level ${lvl(s.lsF,s.lsI)} → ${lvl(s.leF,s.leI)}</div>`:'';
-        return `<tr>${num?`<td rowspan="2" class="pr-n">${i+1}</td>`:''}<td>${E(s.name)}${lv}</td>${span?`<td rowspan="2" class="pr-m">${mi}</td>`:''}<td>${E(s.wo)}</td><td>${E(s.wt)}</td><td>${t12(s.arr)}</td><td>${t12(s.dep)}</td><td>${pump}${rate}</td><td>${E(s.odo)}</td><td>${E(s.bbl)}</td></tr>`;
+        return `<tr>${num?`<td rowspan="2" class="pr-n">${i+1}</td>`:''}<td>${E(s.name)}${lv}${(num&&shMeta.perLoad&&x.client)?`<div class="pr-sm">Client: ${E(x.client)}</div>`:''}</td>${span?`<td rowspan="2" class="pr-m">${mi}</td><td rowspan="2">${E(x.wo)}</td><td rowspan="2">${E(x.wt)}</td>`:''}<td>${t12(s.arr)}</td><td>${t12(s.dep)}</td><td>${pump}${rate}</td><td>${E(s.odo)}</td><td>${E(s.bbl)}</td></tr>`;
       };
       h+=row(x.pu,true,true)+row(x.dr,false,false);
     });
@@ -2376,6 +2478,7 @@
     <table class="pr-foot-t"><tr><th>Start Time</th><td>${t12(shift.tStart)}</td><th>End Time</th><td>${t12(shift.tEnd)}</td><th>Hours worked</th><td>${E(shHoursText())}</td></tr>
     <tr><th>Starting mileage</th><td>${f===null?'':tcFmt(f)+' '+u}</td><th>Ending mileage</th><td>${l===null?'':tcFmt(l)+' '+u}</td><th>Total miles</th><td><b>${seg.total?tcFmt(seg.total)+' '+u:''}</b></td></tr>
     <tr><th>Miles by state</th><td colspan="5">${keys.length?keys.map(k=>E(k==='—'?'No state':k)+': <b>'+tcFmt(seg.by[k])+'</b> '+u).join(' &nbsp;·&nbsp; '):''}</td></tr></table>
+    ${(()=>{const T=shTotals();return `<table class="pr-foot-t"><tr><th>Loads</th><td>${T.loads}</td><th>Total BBL</th><td>${tcFmt(T.bbl)}</td><th>Miles after last load</th><td>${T.after!==null?tcFmt(T.after)+' '+u:''}</td></tr>${T.gross!==null?`<tr><th>Barrel rate</th><td>${shMoney(T.rate)}</td><th>Gross</th><td>${shMoney(T.gross)}</td><th>Your share (${tcFmt(T.share).replace(/\.0$/,'')}%)</th><td><b>${shMoney(T.mine)}</b></td></tr>`:''}</table>`;})()}
     <div class="pr-sig"><span>Driver Signature: ______________________________________</span><span>Date: ________________</span></div>`;
     return h;
   }
@@ -2386,6 +2489,152 @@
     window.print();
   }
 
+
+  // ── full-page picture of the log (black ink only, Letter portrait) ──
+  function shBuildCanvas(){
+    const u=shift.unit,lm=shLoadMiles(),seg=milesSegments(),T=shTotals();
+    const loads=shift.items,nRows=Math.max(14,loads.length*2);
+    const W=1700,M=60,S=1.5,FONT='"Segoe UI",Roboto,Arial,sans-serif';
+    const first=shIftaFirst(),last=shIftaLast();
+    const t12c=t=>{const m=/^(\d{1,2}):(\d{2})$/.exec(t||'');if(!m)return '';let h=+m[1];const ap=h>=12?'P':'A';h=h%12;if(h===0)h=12;return h+':'+m[2]+ap;};
+    const t12=t=>tripFmt12(t)||'';
+    const keys=Object.keys(seg.by).sort((a,b)=>seg.by[b]-seg.by[a]);
+    const stTxt=keys.length?keys.map(k=>(k==='—'?'No state':k)+': '+tcFmt(seg.by[k])+' '+u).join('     '):'';
+    const dateTxt=shift.date?payParse(shift.date).toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'}):'';
+    const truck=(document.getElementById('fTruck')||{}).value,trailer=(document.getElementById('fTrailer')||{}).value;
+    // footer rows: [label,value] triplets
+    const foot=[
+      [['Start Time',t12(shift.tStart)],['End Time',t12(shift.tEnd)],['Hours worked',shHoursText()]],
+      [['Starting mileage',first===null?'':tcFmt(first)+' '+u],['Ending mileage',last===null?'':tcFmt(last)+' '+u],['Total miles',seg.total?tcFmt(seg.total)+' '+u:'']],
+      [['Loads',String(T.loads)],['Total BBL',tcFmt(T.bbl)],['Miles after last load',T.after!==null?tcFmt(T.after)+' '+u:'']]];
+    if(T.gross!==null)foot.push([['Barrel rate',shMoney(T.rate)],['Gross',shMoney(T.gross)],['Your share ('+tcFmt(T.share).replace(/\.0$/,'')+'%)',shMoney(T.mine)]]);
+    const FR=58,statesRow=true,sigH=100;
+    const footH=30+(foot.length+(statesRow?1:0))*FR+34+sigH;
+    const headTop=shMeta.company?176:134,hdrRowH=62,tblTop=headTop+hdrRowH*2+36,thH=88;
+    let H=2200;
+    let rowH=Math.floor((H-M-footH-(tblTop+thH))/nRows);
+    if(rowH>92)rowH=92;
+    if(rowH<46){rowH=46;H=tblTop+thH+nRows*rowH+footH+M;}
+    const cv=document.createElement('canvas');cv.width=W*S;cv.height=H*S;
+    const x=cv.getContext('2d');x.scale(S,S);
+    x.fillStyle='#fff';x.fillRect(0,0,W,H);
+    x.strokeStyle='#000';x.lineWidth=2.5;x.textBaseline='middle';
+    const box=(bx,by,bw,bh,fill)=>{if(fill){x.fillStyle=fill;x.fillRect(bx,by,bw,bh);}x.strokeRect(bx,by,bw,bh);};
+    const txt=(t,tx,ty,font,align,maxW)=>{x.fillStyle='#000';x.font=font;x.textAlign=align||'left';x.fillText(maxW?tripFitText(x,String(t),maxW):String(t),tx,ty);};
+    const GREY='#e4e4e4';
+    // titles
+    let y=M;
+    if(shMeta.company){txt(shMeta.company.toUpperCase(),W/2,y+22,'800 42px '+FONT,'center',W-2*M);y+=54;}
+    txt('DRIVER LOCATION & TIME LOG',W/2,y+(shMeta.company?24:34),'800 38px '+FONT,'center');
+    // header grid
+    const hc=[250,610,190,530],hx=[M,M+250,M+860,M+1050];
+    const hdr=[[['Driver',shMeta.driver],['Date',dateTxt]],[['Truck / Trailer',truck+(trailer?' / '+trailer:'')],['Client',shMeta.perLoad?'(per load)':shMeta.client]]];
+    hdr.forEach((row,r)=>row.forEach((cell,c)=>{
+      const yy=headTop+r*hdrRowH;
+      box(hx[c*2],yy,hc[c*2],hdrRowH,GREY);box(hx[c*2+1],yy,hc[c*2+1],hdrRowH);
+      txt(cell[0],hx[c*2]+14,yy+hdrRowH/2,'800 28px '+FONT,'left',hc[c*2]-20);
+      txt(cell[1],hx[c*2+1]+14,yy+hdrRowH/2,'600 30px '+FONT,'left',hc[c*2+1]-26);
+    }));
+    // main table
+    const cols=[['#',56],['Location / Site / Well Name',380],[(u==='mi'?'Miles':'KM')+'\nper load',115],['WO#',130],['Water\nTicket #',130],['Arrival\nTime',155],['Departure\nTime',155],['Pump\nstart – stop',245],['Odo',120],['# of\nBBLs',94]];
+    const cx=[];let acc=M;cols.forEach(c=>{cx.push(acc);acc+=c[1];});
+    cols.forEach((c,i)=>{
+      box(cx[i],tblTop,c[1],thH,GREY);
+      const lines=c[0].split('\n');
+      lines.forEach((ln,k)=>txt(ln,cx[i]+c[1]/2,tblTop+thH/2+(k-(lines.length-1)/2)*30,'800 25px '+FONT,'center',c[1]-8));
+    });
+    const big=rowH>=74?30:(rowH>=58?27:24),sub=rowH>=74?21:(rowH>=58?19:17),ty0=tblTop+thH;
+    for(let r=0;r<nRows;r++){
+      const ld=loads[Math.floor(r/2)],isPu=r%2===0,st=ld?(isPu?ld.pu:ld.dr):null,yy=ty0+r*rowH;
+      cols.forEach((c,i)=>{
+        if(i===0||i===2||i===3||i===4){if(isPu){box(cx[i],yy,c[1],rowH*2);}return;}   // merged cells: number, miles per load, WO#, ticket#
+        box(cx[i],yy,c[1],rowH);
+      });
+      if(!ld)continue;
+      const mid=yy+rowH/2;
+      if(isPu){
+        txt(Math.floor(r/2)+1,cx[0]+cols[0][1]/2,yy+rowH,'800 '+(big+4)+'px '+FONT,'center');
+        const j=lm[ld.id];
+        if(j&&j.d!==undefined)txt(tcFmt(j.d),cx[2]+cols[2][1]/2,yy+rowH,'800 '+(big+2)+'px '+FONT,'center',cols[2][1]-8);
+        txt(ld.wo,cx[3]+cols[3][1]/2,yy+rowH,'600 '+big+'px '+FONT,'center',cols[3][1]-10);
+        txt(ld.wt,cx[4]+cols[4][1]/2,yy+rowH,'600 '+big+'px '+FONT,'center',cols[4][1]-10);
+      }
+      // location + small notes
+      const notes=[];
+      if(isPu&&(st.lsF||st.lsI||st.leF||st.leI)){const f=(F,I)=>(F||'0')+"'"+(I||'0')+'"';notes.push('Level '+f(st.lsF,st.lsI)+' → '+f(st.leF,st.leI));}
+      if(!isPu&&shMeta.perLoad&&ld.client)notes.push('Client: '+ld.client);
+      const nameY=(notes.length&&rowH>=60)?mid-sub*0.6:mid;
+      txt(st.name,cx[1]+12,nameY,'700 '+big+'px '+FONT,'left',cols[1][1]-20);
+      if(notes.length&&rowH>=60)txt(notes.join('   '),cx[1]+12,mid+big*0.62,'500 '+sub+'px '+FONT,'left',cols[1][1]-20);
+      txt(t12(st.arr),cx[5]+cols[5][1]/2,mid,'600 '+(big-2)+'px '+FONT,'center',cols[5][1]-8);
+      txt(t12(st.dep),cx[6]+cols[6][1]/2,mid,'600 '+(big-2)+'px '+FONT,'center',cols[6][1]-8);
+      const fl=shFlow(st),pump=(st.fs||st.fe)?t12c(st.fs)+' – '+t12c(st.fe):'';
+      if(fl.bpm!==null&&rowH>=70){txt(pump,cx[7]+cols[7][1]/2,mid-sub*0.6,'600 '+(big-4)+'px '+FONT,'center',cols[7][1]-8);txt(fl.bpm.toFixed(2)+' BBL/min',cx[7]+cols[7][1]/2,mid+big*0.62,'500 '+sub+'px '+FONT,'center',cols[7][1]-8);}
+      else txt(pump,cx[7]+cols[7][1]/2,mid,'600 '+(big-4)+'px '+FONT,'center',cols[7][1]-8);
+      txt(st.odo,cx[8]+cols[8][1]/2,mid,'600 '+(big-3)+'px '+FONT,'center',cols[8][1]-8);
+      txt(st.bbl,cx[9]+cols[9][1]/2,mid,'700 '+big+'px '+FONT,'center',cols[9][1]-8);
+    }
+    // footer
+    let fy=ty0+nRows*rowH+30;
+    const half=(W-2*M)/3;
+    foot.forEach(row=>{
+      row.forEach((cell,i)=>{
+        const lw=250,bx=M+i*half;
+        box(bx,fy,lw,FR,GREY);box(bx+lw,fy,half-lw,FR);
+        txt(cell[0],bx+12,fy+FR/2,'800 23px '+FONT,'left',lw-18);
+        txt(cell[1],bx+lw+12,fy+FR/2,'700 27px '+FONT,'left',half-lw-20);
+      });
+      fy+=FR;
+    });
+    box(M,fy,250,FR,GREY);box(M+250,fy,W-2*M-250,FR);
+    txt('Miles by state',M+12,fy+FR/2,'800 23px '+FONT,'left',230);
+    txt(stTxt,M+262,fy+FR/2,'700 27px '+FONT,'left',W-2*M-280);
+    fy+=FR+64;
+    txt('Driver Signature:',M,fy,'700 27px '+FONT,'left');
+    x.beginPath();x.moveTo(M+250,fy+10);x.lineTo(M+1000,fy+10);x.stroke();
+    txt('Date:',M+1060,fy,'700 27px '+FONT,'left');
+    x.beginPath();x.moveTo(M+1140,fy+10);x.lineTo(W-M,fy+10);x.stroke();
+    return cv;
+  }
+  function shSaveImage(){
+    let cv;
+    try{cv=shBuildCanvas();}catch(e){tcToast('Could not build image');return;}
+    cv.toBlob(b=>{
+      if(!b){tcToast('Could not create image');return;}
+      const a=document.createElement('a'),url=URL.createObjectURL(b);
+      a.href=url;a.download='driver-log-'+(shift.date||tcToday())+'.png';
+      document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),5000);
+      tcToast('Image saved to Downloads');
+    },'image/png');
+  }
+
+  // ── Log Day: file today's IFTA + Shift into the saved day log ──
+  const LS_DAYLOG='tc_daylog_v1';
+  function daylogLoad(){
+    const d=tcLoad(LS_DAYLOG,()=>({v:1,days:[]}));
+    d.days=Array.isArray(d.days)?d.days.filter(x=>x&&typeof x==='object'&&x.date):[];d.v=1;return d;
+  }
+  function shLogDay(){
+    const hasIfta=miles.lines.some(l=>l.odo!==null||l.state),hasShift=shift.items.length||shift.tStart||shift.tEnd;
+    if(!hasIfta&&!hasShift){tcToast('Nothing to log yet');return;}
+    const seg=milesSegments(),date=shift.date||tcToday();
+    const snap={id:Date.now(),date,savedAt:new Date().toISOString(),unit:miles.unit,driver:shMeta.driver,
+      ifta:{lines:miles.lines.map(l=>({state:l.state,odo:l.odo})),by:seg.by,total:seg.total,first:shIftaFirst(),last:shIftaLast()},
+      shift:JSON.parse(JSON.stringify({date:shift.date,tStart:shift.tStart,tEnd:shift.tEnd,tz:shift.tz,items:shift.items})),
+      totals:shTotals()};
+    const log=daylogLoad(),i=log.days.findIndex(x=>x.date===date);
+    if(i>=0)log.days[i]=snap;else log.days.push(snap);   // logging the same date again replaces it
+    log.days.sort((a,b)=>a.date<b.date?1:-1);
+    tcSave(LS_DAYLOG,log);
+    if(typeof stRender==='function')stRender();
+    tcToast('Logged '+date+(i>=0?' (replaced earlier entry)':''));
+    if(confirm('Day logged. Clear the IFTA lines and Shift tab to start a new day?')){
+      miles.lines=[];milesSave();
+      const u=shift.unit,tz=shift.tz;shift=shDefault();shift.unit=u;shift.tz=tz;shSave();
+      renderMiles();shRender();
+    }
+  }
   // ════════════════════════════════════════════════════════
   // MODULES — Settings checkboxes decide which tabs show in the tab bar.
   // Permanent key LS_MODS. Unchecking only hides the tab; its data is kept.
@@ -2414,6 +2663,71 @@
   function renderModules(){
     const el=document.getElementById('modList');if(!el)return;
     el.innerHTML=MODULES.map(([id,label],i)=>`<label class="mod-row${i%2?' alt':''}"><input type="checkbox" ${modHidden(id)?'':'checked'} onchange="modToggle('${id}',this.checked)"><span>${label}</span></label>`).join('');
+  }
+
+  // ════════════════════════════════════════════════════════
+  // SETTINGS — profile/report header, pay rates, backup + logged days.
+  // Everything lives in this browser's storage for this site; the backup file
+  // is the safety net (new phone, cleared browser data).
+  // ════════════════════════════════════════════════════════
+  function stMeta(f,v){
+    shMeta[f]=v;shMetaSave();
+    if(f==='perLoad'){document.getElementById('stClientsRow').style.display=v?'':'none';shRender();}
+    else if(f==='clients'||f==='client'){shRender();}
+    else shDerived();
+  }
+  function stBytes(){
+    let n=0;
+    try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^tc_/.test(k)||k==='locations')n+=k.length+(localStorage.getItem(k)||'').length;}}catch(e){}
+    return n*2;   // browsers store text as UTF-16
+  }
+  function stRender(){
+    const g=id=>document.getElementById(id);if(!g('stDriver'))return;
+    if(document.activeElement!==g('stDriver'))g('stDriver').value=shMeta.driver;
+    g('stCompany').value=shMeta.company;g('stClient').value=shMeta.client;
+    g('stPerLoad').checked=shMeta.perLoad;g('stClientsRow').style.display=shMeta.perLoad?'':'none';g('stClients').value=shMeta.clients;
+    g('stRate').value=shMeta.rate;g('stShare').value=shMeta.share;g('stCap').value=shMeta.cap;
+    const log=daylogLoad();
+    g('stDataNote').textContent='Saved on this phone: '+(stBytes()/1024).toFixed(1)+' KB of roughly 5,000 KB available. '+log.days.length+' day'+(log.days.length===1?'':'s')+' logged.';
+    g('stDays').innerHTML=log.days.length?log.days.map((d,i)=>{
+      const keys=Object.keys((d.ifta&&d.ifta.by)||{}).filter(k=>k!=='—');
+      return `<div class="row${i%2?' alt':''}"><div class="st-name">${tcEsc(d.date)}<br><small style="color:var(--muted);font-weight:600;">${tcFmt((d.ifta&&d.ifta.total)||0)} ${tcEsc(d.unit||'mi')} · ${(d.shift&&d.shift.items?d.shift.items.length:0)} loads${keys.length?' · '+tcEsc(keys.join(', ')):''}</small></div><div class="ctrl"><button class="del-btn" onclick="stDelDay(${Number(d.id)||0})">✕</button></div></div>`;
+    }).join(''):'<div class="empty-note">No days logged yet. Use <b>✔ Log Day</b> on the IFTA or Shift tab at the end of a shift.</div>';
+  }
+  function stDelDay(id){
+    if(!confirm('Delete this logged day?'))return;
+    const log=daylogLoad();log.days=log.days.filter(d=>Number(d.id)!==id);tcSave(LS_DAYLOG,log);stRender();
+  }
+  function stBackupObject(){
+    const data={};
+    for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^tc_/.test(k)||k==='locations')data[k]=localStorage.getItem(k);}
+    return {app:'tank-calc',v:1,exported:new Date().toISOString(),driver:shMeta.driver,data};
+  }
+  function stExport(){
+    const obj=stBackupObject(),slug=(shMeta.driver||'').trim().replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'').slice(0,20);
+    const b=new Blob([JSON.stringify(obj)],{type:'application/json'});
+    const a=document.createElement('a'),url=URL.createObjectURL(b);
+    a.href=url;a.download='tank-calc-backup'+(slug?'-'+slug:'')+'-'+tcToday()+'.json';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
+    tcToast('Backup saved to Downloads');
+  }
+  // restores only this app's own keys (never the GitHub token)
+  function stImportText(text){
+    let o;try{o=JSON.parse(text);}catch(e){return {ok:false,msg:'That file is not a Tank Calc backup.'};}
+    if(!o||o.app!=='tank-calc'||!o.data||typeof o.data!=='object')return {ok:false,msg:'That file is not a Tank Calc backup.'};
+    const keys=Object.keys(o.data).filter(k=>(/^tc_/.test(k)||k==='locations')&&typeof o.data[k]==='string');
+    if(!keys.length)return {ok:false,msg:'The backup is empty.'};
+    if(!confirm('Restore '+keys.length+' saved items from this backup? This replaces the matching data on this phone.'))return {ok:false,msg:'Import cancelled.'};
+    keys.forEach(k=>{try{JSON.parse(o.data[k]);localStorage.setItem(k,o.data[k]);}catch(e){}});
+    return {ok:true,msg:'Restored '+keys.length+' items.',count:keys.length};
+  }
+  async function stImportFile(files){
+    const f=files&&files[0];if(!f)return;
+    const r=stImportText(await f.text());
+    tcToast(r.msg);
+    const el=document.getElementById('stImportFile');if(el)el.value='';
+    if(r.ok){try{location.reload();}catch(e){}}
   }
 
   // ════════════════════════════════════════════════════════
@@ -2570,7 +2884,7 @@
   }
 
   // ── INIT ──────────────────────────────────────────────
-  renderModules();shSyncUnit();shRender();
+  renderModules();shSyncUnit();shRender();stRender();
   flowLoadIds();
   renderInputs();   // build initial ft/in fields
   calc();
