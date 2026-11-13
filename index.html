@@ -270,13 +270,6 @@
     .tin[type=time] { font-size:11.5px; letter-spacing:-.2px; padding:7px 0; }
     #shTStart, #shTEnd, #tab-pay .time-input { width:118px !important; }
     .settings-card textarea.settings-input { width:100%; box-sizing:border-box; }
-    #shPreview { display:none; position:fixed; inset:0; background:#000; z-index:200; }
-    #shPreview .pv-bar { position:sticky; top:0; display:flex; gap:8px; align-items:center; justify-content:space-between; padding:8px 10px; background:#111a22; border-bottom:1px solid var(--border); }
-    #shPreview .pv-bar button { padding:9px 12px; border-radius:8px; border:1px solid var(--accent); background:transparent; color:var(--accent); font-weight:800; font-size:12px; font-family:inherit; }
-    #shPreview .pv-bar span { font-size:10px; letter-spacing:1px; color:var(--muted); font-weight:700; text-align:center; }
-    #shPreview .pv-scroll { position:absolute; top:52px; left:0; right:0; bottom:0; overflow:auto; -webkit-overflow-scrolling:touch; }
-    #shPreview img { display:block; width:100%; background:#fff; }
-    #shPreview img.zoom { width:260%; max-width:none; }
     #tcToast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:#1c2733; border:1px solid var(--accent); color:var(--text); padding:10px 16px; border-radius:10px; font-size:12px; font-weight:700; opacity:0; pointer-events:none; transition:opacity .2s; z-index:50; max-width:90vw; text-align:center; }
     #tcToast.show { opacity:1; }
 
@@ -294,20 +287,22 @@
     .fuel-row .fdate { min-width:0; width:100%; }
     .fuel-row .fppg { font-size:10px; font-weight:700; color:var(--gold); text-align:center; }
 
-    /* Shift tab screen size. Default = exactly as before (field wrappers are invisible). ×1–×3 scale up and put 2 fields per row. */
-    #tab-shift .fld { display:contents; }
-    #tab-shift .fld .fl { display:none; }
-    #tab-shift.sc1 { zoom:1.2; } #tab-shift.sc2 { zoom:1.5; } #tab-shift.sc3 { zoom:1.85; }
-    #tab-shift:not(.sc0) .tg-head { display:none; }
-    #tab-shift:not(.sc0) .tg { grid-template-columns:1fr 1fr; gap:6px 8px; padding:6px 10px; }
-    #tab-shift:not(.sc0) .fld { display:flex; flex-direction:column; gap:2px; min-width:0; }
-    #tab-shift:not(.sc0) .fld.wide { grid-column:1 / -1; }
-    #tab-shift:not(.sc0) .fld .fl { display:block; font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); font-weight:700; }
-    #tab-shift:not(.sc0) .tg .now-btn { grid-column:1 / -1; padding:10px 0; }
-    #tab-shift:not(.sc0) .tg > .pday { grid-column:1 / -1; }
-    #tab-shift:not(.sc0) .tin, #tab-shift:not(.sc0) .oin { padding:9px 2px; }
-    #tab-shift:not(.sc0) .lvl { flex-wrap:wrap; row-gap:6px; }
-    #tab-shift:not(.sc0) .lvl .tin { width:54px; }
+    /* Shift tab: one field per row, full width. Screen size ×1–×3 scales it. */
+    #tab-shift .stophead { margin-top:12px; padding:8px 12px; font-size:11px; letter-spacing:2px; text-transform:uppercase; font-weight:800; color:var(--accent); background:rgba(240,165,0,0.08); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+    #tab-shift .sf { padding:8px 12px 0; }
+    #tab-shift .sf .fl { display:block; margin-bottom:4px; font-size:11px; letter-spacing:.5px; text-transform:uppercase; color:var(--muted); font-weight:700; }
+    #tab-shift .sf .tin, #tab-shift .sf .oin, #tab-shift .sf .loc-input { display:block; width:100%; min-width:0; box-sizing:border-box; min-height:46px; padding:8px 10px; font-size:17px; }
+    #tab-shift .sf .tin { text-align:left; }
+    #tab-shift .sf-pair { display:flex; align-items:center; gap:6px; }
+    #tab-shift .sf-pair .tin { flex:1; text-align:center; }
+    #tab-shift .sf-pair .lv { font-size:13px; color:var(--muted); font-weight:700; }
+    #tab-shift .sbtn { display:block; width:100%; margin-top:6px; min-height:44px; padding:10px; border-radius:10px; border:1px solid var(--accent); background:rgba(240,165,0,0.10); color:var(--accent); font-size:14px; font-weight:800; font-family:inherit; cursor:pointer; }
+    #tab-shift .sbtn:active { background:rgba(240,165,0,0.30); }
+    #tab-shift .sbtn.ghost { border-color:var(--border); background:transparent; color:var(--dim); font-weight:700; }
+    #tab-shift .sflow { padding:6px 14px 0; font-size:12px; font-weight:700; color:var(--green); min-height:0; }
+    #tab-shift .sflow:empty { display:none; }
+    #tab-shift .locrow { padding:6px 12px 0; }
+    #tab-shift.hide-ad .f-ad, #tab-shift.hide-pump .f-pump, #tab-shift.hide-lvl .f-lvl, #tab-shift.hide-wo .f-wo { display:none; }
 
     .pipbar { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; border-bottom:1px solid var(--border); }
     .pips { display:flex; flex-wrap:wrap; gap:6px; flex:1; min-width:0; }
@@ -315,6 +310,37 @@
     .pip.active { background:var(--accent); border-color:var(--accent); color:#111; }
     .pip.add { flex:none; border-color:var(--accent); color:var(--accent); background:transparent; font-size:12px; }
     .pip.add:active { background:rgba(240,165,0,0.18); }
+    .locrow { display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:0 10px 6px; }
+    .locrow:empty { display:none; }
+    .locrow .loctxt { font-size:11px; color:var(--muted); font-weight:600; flex:1 1 100%; }
+    .locbtn { padding:9px 10px; border-radius:8px; border:1px solid var(--blue); background:transparent; color:var(--blue); font-size:12px; font-weight:800; font-family:inherit; cursor:pointer; }
+    .locbtn:active { background:rgba(80,160,255,0.18); }
+    .loc-here { flex:none; padding:7px 7px; border-radius:8px; border:1px solid var(--blue); background:transparent; color:var(--blue); font-size:11px; font-weight:800; font-family:inherit; cursor:pointer; white-space:nowrap; }
+    .loc-field .loc-input { min-width:0; }
+    #payText { width:100%; box-sizing:border-box; resize:vertical; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; }
+
+    .shstrip { display:flex; justify-content:space-between; align-items:center; gap:8px; margin:0 0 8px; padding:10px 12px; border-radius:10px; background:var(--bg2); border:1px solid var(--border); font-size:12px; font-weight:700; color:var(--text); cursor:pointer; }
+    .shstrip .go { flex:none; color:var(--accent); font-size:11px; letter-spacing:1px; text-transform:uppercase; }
+    #tab-duty .sf, #tab-track .sf { padding:8px 12px 0; }
+    #tab-duty .sf .fl { display:block; margin-bottom:4px; font-size:11px; letter-spacing:.5px; text-transform:uppercase; color:var(--muted); font-weight:700; }
+    #tab-duty .sf .loc-input { display:block; width:100%; box-sizing:border-box; min-height:46px; font-size:17px; padding:8px 10px; }
+    .sbtn { display:block; width:100%; margin-top:6px; min-height:44px; padding:10px; border-radius:10px; border:1px solid var(--accent); background:rgba(240,165,0,0.10); color:var(--accent); font-size:14px; font-weight:800; font-family:inherit; cursor:pointer; }
+    .sbtn.ghost { border-color:var(--border); background:transparent; color:var(--dim); font-weight:700; }
+    .sbtn.big { min-height:58px; font-size:16px; }
+    .sbtn.go { border-color:var(--green); background:rgba(0,200,120,0.12); color:var(--green); }
+    .sbtn.stop { border-color:var(--red); background:rgba(255,80,80,0.10); color:var(--red); }
+    .trk-line { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 12px; border-top:1px solid var(--border); }
+    .trk-line.yard { background:rgba(240,165,0,0.06); }
+    .trk-lbl { flex:1; min-width:0; font-size:14px; font-weight:700; line-height:1.25; }
+    .trk-line .tin { flex:none; width:128px; min-height:42px; font-size:15px; }
+    .trk-gap { padding:3px 12px 3px 26px; font-size:11px; color:var(--muted); font-weight:700; }
+    .trk-site { display:flex; gap:8px; align-items:center; padding:8px 12px 0; border-top:1px solid var(--border); }
+    .trk-site .loc-input { flex:1; min-width:0; min-height:42px; }
+    .trk-sep { height:1px; background:var(--border); margin:2px 0; }
+
+    .sf.btn2 { display:flex; gap:8px; }
+    .sf.btn2 .sbtn { margin-top:6px; flex:1; min-width:0; }
+    .trk-gap { padding:5px 12px 5px 26px; font-size:13px; color:var(--accent); font-weight:800; }
   </style>
 </head>
 <body>
@@ -349,21 +375,73 @@
 
 <!-- TAB BAR -->
 <div class="tab-bar">
-  <button class="tab active" onclick="switchTab('calc')">⚗️ Calc</button>
-  <button class="tab" onclick="switchTab('flow')">🌊 Flow</button>
-  <button class="tab" onclick="switchTab('miles')">🛣️ IFTA</button>
-  <button class="tab" onclick="switchTab('trip')">🚚 Trip</button>
+  <button class="tab active" onclick="switchTab('duty')">🟢 On Duty</button>
   <button class="tab" onclick="switchTab('shift')">📋 Shift</button>
+  <button class="tab" onclick="switchTab('miles')">🛣️ IFTA</button>
   <button class="tab" onclick="switchTab('fuel')">⛽ Fuel</button>
+  <button class="tab" onclick="switchTab('track')">⏱ Timeline</button>
+  <button class="tab" onclick="switchTab('calc')">⚗️ Calc</button>
+  <button class="tab" onclick="switchTab('flow')">🌊 Flow</button>
+  <button class="tab" onclick="switchTab('trip')">🚚 Trip</button>
   <button class="tab" onclick="switchTab('pay')">🗓️ Pay</button>
   <button class="tab" onclick="switchTab('locs')">📍 Locations</button>
   <button class="tab" onclick="switchTab('settings')">⚙️</button>
 </div>
 
 <!-- ═══════════════════════════════ -->
+<!-- ON DUTY TAB — start of every shift -->
+<!-- ═══════════════════════════════ -->
+<div class="tab-panel active" id="tab-duty">
+  <div class="sheet">
+    <div class="sec-head green">On Duty</div>
+    <div class="sf" style="padding-top:10px;"><label class="fl" for="dutyDriver">Driver</label><input class="loc-input" id="dutyDriver" type="text" maxlength="40" placeholder="Your name or ID" oninput="dutyDriver(this.value)"></div>
+    <div class="trip-note">An online login (user ID + password) comes with the cloud accounts. Until then this phone is your login and your data stays on it.</div>
+    <div class="sf btn2"><button class="sbtn big go" onclick="dutyOn()">ON DUTY</button><button class="sbtn big stop" onclick="dutyOff()">OFF DUTY</button></div>
+    <div style="height:8px"></div>
+    <div class="row">
+      <div class="lbl">Date</div>
+      <div class="ctrl" style="gap:6px;"><input type="date" class="time-input" id="shDate" style="width:136px;" oninput="shTop('date',this.value)" /><button class="stamp-btn" onclick="shToday()">Today</button></div>
+    </div>
+    <div class="row alt">
+      <div class="lbl">Truck ID<small>same as Flow tab</small></div>
+      <div class="ctrl"><input class="loc-input fin" id="shTruck" type="text" maxlength="30" placeholder="Truck name / #" oninput="shSetIds()" /></div>
+    </div>
+    <div class="row">
+      <div class="lbl">Trailer ID<small>same as Flow tab</small></div>
+      <div class="ctrl"><input class="loc-input fin" id="shTrailer" type="text" maxlength="30" placeholder="Trailer ID" oninput="shSetIds()" /></div>
+    </div>
+    <div style="display:none">
+    <div class="row">
+      <div class="lbl">On duty at yard<small>shift start</small></div>
+      <div class="ctrl" style="gap:6px;"><input type="time" class="time-input" id="shTStart" oninput="shTop('tStart',this.value)" /><button class="stamp-btn" onclick="shNowTop('tStart','shTStart')">Now</button></div>
+    </div>
+    <div class="row">
+      <div class="lbl">Off duty at yard<small>shift end</small></div>
+      <div class="ctrl" style="gap:6px;"><input type="time" class="time-input" id="shTEnd" oninput="shTop('tEnd',this.value)" /><button class="stamp-btn" onclick="shNowTop('tEnd','shTEnd')">Now</button></div>
+    </div>
+    <div class="row">
+      <div class="lbl">Hours worked</div>
+      <div class="ctrl"><span class="out green" style="font-size:16px;" id="shHours">—</span></div>
+    </div>
+      <span id="shStartNote"></span>
+    </div>
+    <div class="row alt">
+      <div class="lbl">Clock<small>time zone the Now buttons use</small></div>
+      <div class="ctrl"><select class="sel" id="shTz" onchange="shSetTz(this.value)"></select></div>
+    </div>
+    <div class="row">
+      <div class="lbl">Units<small>same as IFTA tab</small></div>
+      <div class="ctrl"><div class="tog-group">
+        <button class="tog active" id="shUnitMi" onclick="shSetUnit('mi')">MI</button>
+        <button class="tog" id="shUnitKm" onclick="shSetUnit('km')">KM</button>
+      </div></div>
+    </div>
+  </div>
+</div>
+<!-- ═══════════════════════════════ -->
 <!-- CALCULATOR TAB                 -->
 <!-- ═══════════════════════════════ -->
-<div class="tab-panel active" id="tab-calc">
+<div class="tab-panel" id="tab-calc">
 <div class="sheet">
 
   <div class="sec-head">Setup</div>
@@ -708,60 +786,8 @@
 <!-- SHIFT TAB — per-load log + printable driver log -->
 <!-- ═══════════════════════════════ -->
 <div class="tab-panel" id="tab-shift">
-  <div class="sheet" style="margin-bottom:8px;">
-    <div class="row" style="padding:6px 10px;">
-      <div class="lbl">Screen size</div>
-      <div class="ctrl"><div class="tog-group">
-        <button class="tog active" id="shSc0" onclick="shScaleSet(0)">Default</button>
-        <button class="tog" id="shSc1" onclick="shScaleSet(1)">×1</button>
-        <button class="tog" id="shSc2" onclick="shScaleSet(2)">×2</button>
-        <button class="tog" id="shSc3" onclick="shScaleSet(3)">×3</button>
-      </div></div>
-    </div>
-  </div>
+  <div class="shstrip" id="shStrip" onclick="switchTab('duty')" role="button" aria-label="Open On Duty tab"><span id="shStripTxt"></span><span class="go">On Duty ›</span></div>
   <div class="sheet">
-    <div class="sec-head green">Shift Log <span id="shClockSum" style="font-size:10px;font-weight:600;letter-spacing:0;color:var(--muted);flex:1;text-align:center;"></span><button class="clr-btn" id="shClockBtn" onclick="shClockToggle()">▾ Hide</button> <button class="clr-btn" onclick="shClear()">Clear</button></div>
-    <div id="shClockBody">
-    <div class="row">
-      <div class="lbl">Date</div>
-      <div class="ctrl" style="gap:6px;"><input type="date" class="time-input" id="shDate" style="width:136px;" oninput="shTop('date',this.value)" /><button class="stamp-btn" onclick="shToday()">Today</button></div>
-    </div>
-    <div class="row alt">
-      <div class="lbl">Truck ID<small>same as Flow tab</small></div>
-      <div class="ctrl"><input class="loc-input fin" id="shTruck" type="text" maxlength="30" placeholder="Truck name / #" oninput="shSetIds()" /></div>
-    </div>
-    <div class="row">
-      <div class="lbl">Trailer ID<small>same as Flow tab</small></div>
-      <div class="ctrl"><input class="loc-input fin" id="shTrailer" type="text" maxlength="30" placeholder="Trailer ID" oninput="shSetIds()" /></div>
-    </div>
-    <div class="row alt">
-      <div class="lbl">Shift start</div>
-      <div class="ctrl" style="gap:6px;"><input type="time" class="time-input" id="shTStart" oninput="shTop('tStart',this.value)" /><button class="stamp-btn" onclick="shNowTop('tStart','shTStart')">Now</button></div>
-    </div>
-    <div class="row">
-      <div class="lbl">Shift end</div>
-      <div class="ctrl" style="gap:6px;"><input type="time" class="time-input" id="shTEnd" oninput="shTop('tEnd',this.value)" /><button class="stamp-btn" onclick="shNowTop('tEnd','shTEnd')">Now</button></div>
-    </div>
-    <div class="row alt">
-      <div class="lbl">Hours worked</div>
-      <div class="ctrl"><span class="out green" style="font-size:16px;" id="shHours">—</span></div>
-    </div>
-    <div class="row">
-      <div class="lbl">Clock<small>time zone the Now buttons use</small></div>
-      <div class="ctrl"><select class="sel" id="shTz" onchange="shSetTz(this.value)"></select></div>
-    </div>
-    <div class="row alt">
-      <div class="lbl">Units<small>same as IFTA tab</small></div>
-      <div class="ctrl"><div class="tog-group">
-        <button class="tog active" id="shUnitMi" onclick="shSetUnit('mi')">MI</button>
-        <button class="tog" id="shUnitKm" onclick="shSetUnit('km')">KM</button>
-      </div></div>
-    </div>
-    <div class="trip-note" id="shStartNote"></div>
-    </div>
-  </div>
-
-  <div class="sheet gap-top">
     <div class="sec-head pink">Loads</div>
     <div class="pipbar" id="shPips"></div>
     <div id="shItems"></div>
@@ -776,6 +802,19 @@
   <div class="btn-pair">
     <button class="block-btn green" onclick="shLogDay()">✔ Log Day</button>
     <button class="block-btn green" onclick="shPrint()">🖨 Print</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ -->
+<!-- TIMELINE TAB — where the shift went -->
+<!-- ═══════════════════════════════ -->
+<div class="tab-panel" id="tab-track">
+  <div class="sheet">
+    <div class="sec-head blue">Timeline <span id="trkDate" style="font-size:10px;font-weight:600;letter-spacing:0;color:var(--muted);flex:1;text-align:right;"></span></div>
+    <div class="sf" style="padding-top:10px;"><button class="sbtn big" id="trkNext" onclick="trkNextRun()"></button></div>
+    <div class="sf btn2"><button class="sbtn big" onclick="trkYard('yardIn')">Arrived at yard</button><button class="sbtn big" onclick="trkYard('yardOut')">Left yard</button></div>
+    <div style="height:8px"></div>
+    <div id="trkList"></div>
   </div>
 </div>
 
@@ -855,6 +894,23 @@
     <div class="sec-head blue">Weeks <button class="clr-btn" onclick="payAddManual()">+ Add shift</button></div>
     <div id="payWeeks"></div>
   </div>
+
+  <div class="sheet gap-top">
+    <div class="sec-head orange">Import / Export (plain text)</div>
+    <div style="padding:8px 12px 10px;">
+      <div class="trip-note" style="padding:0 0 6px;">One shift per line: <b>date, clock-on, clock-off</b> — for example <b>2026-11-09, 17:30, 05:40</b>. Off earlier than on means it ended the next day. Lines starting with # are ignored. Dates like 11/9/2026 and times like 5:30 PM also work.</div>
+      <textarea id="payText" class="settings-input"  rows="7" placeholder="Paste shifts here…" spellcheck="false" style="width:100%;box-sizing:border-box;"></textarea>
+      <div class="btn-pair" style="margin-top:8px;">
+        <button class="block-btn green" onclick="payImportRun(false)">Check</button>
+        <button class="block-btn green" onclick="payImportRun(true)">Import</button>
+      </div>
+      <div class="btn-pair" style="margin-top:6px;">
+        <button class="block-btn" onclick="payExportText()">Export all</button>
+        <button class="block-btn" onclick="payCopyText()">Copy</button>
+      </div>
+      <div class="trip-note" id="payImpMsg" style="padding:8px 0 0;white-space:pre-wrap;"></div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════ -->
@@ -871,11 +927,11 @@
     </div>
     <div class="loc-field alt">
       <div class="loc-lbl">Routing GPS<br><span style="font-size:9px;color:var(--muted);">Nav to</span></div>
-      <input class="loc-input" id="loc-gps1" type="text" placeholder="lat, lng" />
+      <input class="loc-input" id="loc-gps1" type="text" placeholder="lat, lng" /><button class="loc-here" onclick="locUseHere('loc-gps1')">📍 Here</button>
     </div>
     <div class="loc-field">
       <div class="loc-lbl">Site GPS<br><span style="font-size:9px;color:var(--muted);">Actual</span></div>
-      <input class="loc-input" id="loc-gps2" type="text" placeholder="lat, lng" />
+      <input class="loc-input" id="loc-gps2" type="text" placeholder="lat, lng" /><button class="loc-here" onclick="locUseHere('loc-gps2')">📍 Here</button>
     </div>
     <div class="loc-field alt">
       <div class="loc-lbl">Note</div>
@@ -960,6 +1016,9 @@
   </div>
 
   <div class="settings-card" style="margin-top:12px;">
+    <div class="sec-head orange">Shift fields to show</div>
+    <div id="shFieldList"></div>
+    <div class="trip-note">Untick what your company does not track. Hidden boxes disappear from the Shift tab; anything already entered is kept.</div>
     <div class="sec-head orange">Tabs / Modules</div>
     <div id="modList"></div>
     <div class="trip-note">Uncheck a tool to remove its tab. Your saved data stays; check it again to bring the tab back. Settings always stays.</div>
@@ -1022,7 +1081,7 @@
   function dismissBanner(){localStorage.setItem('bm-dismissed','1');document.getElementById('bookmark-banner').style.display='none';}
 
   // ── TABS ──
-  const TAB_IDS=['calc','flow','miles','trip','shift','fuel','pay','locs','settings'];
+  const TAB_IDS=['duty', 'shift', 'miles', 'fuel', 'track', 'calc', 'flow', 'trip', 'pay', 'locs', 'settings'];
   function tabIntoView(i){
     const bar=document.querySelector('.tab-bar'),btn=document.querySelectorAll('.tab-bar .tab')[i];
     if(!bar||!btn||typeof bar.scrollTo!=='function')return;
@@ -1037,6 +1096,8 @@
     if(t==='fuel')fuelRender();
     if(t==='pay')renderPay();
     if(t==='shift')shRender();
+    if(t==='track')trkRender();
+    if(t==='duty')shRender();
     if(t==='settings')stRender();
     tabIntoView(TAB_IDS.indexOf(t));
     if(t==='settings')loadGitHubSettings();
@@ -2308,6 +2369,68 @@
     payRenderTotals();
   }
 
+
+  // ── Plain-text import / export of shifts: "date, clock-on, clock-off" (one per line) ──
+  // Import only ADDS shifts. Exact duplicates are skipped; a same date+clock-on with a different clock-off is reported, not overwritten.
+  const PAY_TXT_HEADER='# Tank Calc shifts v1\n# date, clock-on, clock-off (24h; off earlier than on = next day)\n';
+  function payParseText(text){
+    const rows=[],errors=[];
+    const to24=(h,m,ap)=>{h=+h;m=+m;if(ap){const a=ap[0].toLowerCase();if(h<1||h>12)return null;h=(h%12)+(a==='p'?12:0);}if(h>23||m>59)return null;return tcPad(h)+':'+tcPad(m);};
+    String(text||'').split(/\r?\n/).forEach((raw,i)=>{
+      const line=raw.trim();if(!line||line[0]==='#')return;
+      if(/^date\b/i.test(line)&&!/\d{1,2}:\d{2}/.test(line))return;   // a header row
+      let rest=line,dates=[];
+      rest=rest.replace(/(\d{4})-(\d{1,2})-(\d{1,2})|(\d{1,2})\/(\d{1,2})\/(\d{2,4})/g,(m,y,mo,d,m2,d2,y2)=>{
+        let Y,M,D;if(y){Y=+y;M=+mo;D=+d;}else{Y=+y2<100?2000+ +y2:+y2;M=+m2;D=+d2;}
+        const dt=new Date(Y,M-1,D);dates.push((dt.getFullYear()===Y&&dt.getMonth()===M-1&&dt.getDate()===D)?payIso(dt):null);return ' ';});
+      if(!dates.length){errors.push({line:i+1,text:line,why:'no date found'});return;}
+      if(dates[0]===null){errors.push({line:i+1,text:line,why:'not a real date'});return;}
+      const times=[];let bad=false;
+      rest.replace(/(\d{1,2}):(\d{2})\s*([ap])?\.?(?:m\.?)?/gi,(m,h,mi,ap)=>{const t=to24(h,mi,ap?ap+'m':'');if(t===null)bad=true;else times.push(t);return ' ';});
+      if(bad){errors.push({line:i+1,text:line,why:'time not valid'});return;}
+      if(!times.length){errors.push({line:i+1,text:line,why:'no time found'});return;}
+      if(times.length>2){errors.push({line:i+1,text:line,why:'more than two times'});return;}
+      const r={date:dates[0],on:times[0],off:times[1]||'',line:i+1};
+      if(r.off&&dates[1]){   // an explicit clock-out date must match the overnight rule
+        const exp=payOutDate({date:r.date,on:r.on,off:r.off});
+        if(dates[1]!==null&&exp&&dates[1]!==exp){errors.push({line:i+1,text:line,why:'clock-out date '+dates[1]+' does not fit the times (expected '+exp+')'});return;}
+      }
+      rows.push(r);
+    });
+    return {rows,errors};
+  }
+  function payImportRun(doIt){
+    const el=document.getElementById('payText'),msg=document.getElementById('payImpMsg');if(!el||!msg)return;
+    const res=payParseText(el.value);
+    let add=[],dup=0,conf=[];
+    res.rows.forEach(r=>{
+      const same=paySched.shifts.concat(add).find(s=>s.date===r.date&&s.on===r.on);
+      if(same){if((same.off||'')===r.off)dup++;else conf.push(r);return;}
+      add.push({id:Date.now()+add.length,date:r.date,on:r.on,off:r.off});
+    });
+    const lines=[];
+    lines.push((doIt?'Imported ':'Would import ')+add.length+' shift'+(add.length===1?'':'s')+(dup?' · '+dup+' already here (skipped)':'')+(conf.length?' · '+conf.length+' conflict'+(conf.length===1?'':'s')+' (skipped)':'')+(res.errors.length?' · '+res.errors.length+' line'+(res.errors.length===1?'':'s')+' not understood':''));
+    conf.slice(0,5).forEach(r=>lines.push('  conflict, line '+r.line+': '+r.date+' '+r.on+' is already saved with a different clock-off'));
+    res.errors.slice(0,8).forEach(e=>lines.push('  line '+e.line+': '+e.why+' — '+e.text.slice(0,50)));
+    if(doIt&&add.length){
+      add.forEach(s=>{paySched.shifts.push(s);payOpenKeys.add(payIso(payPeriodStart(s.date)));});
+      paySave();renderPay();tcToast('Imported '+add.length+' shift'+(add.length===1?'':'s'));
+    }
+    msg.textContent=lines.join('\n');
+    return {added:add.length,dup,conf:conf.length,errors:res.errors.length};
+  }
+  function payExportText(){
+    const list=paySched.shifts.slice().sort((a,b)=>(a.date+a.on).localeCompare(b.date+b.on));
+    const el=document.getElementById('payText');
+    el.value=PAY_TXT_HEADER+list.map(s=>s.date+', '+s.on+(s.off?', '+s.off:'')).join('\n')+(list.length?'\n':'');
+    document.getElementById('payImpMsg').textContent='Exported '+list.length+' shift'+(list.length===1?'':'s')+'. Copy it, or save it as a backup.';
+  }
+  function payCopyText(){
+    const el=document.getElementById('payText');if(!el.value)payExportText();
+    const done=()=>tcToast('Copied');
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(el.value).then(done,()=>{el.select();document.execCommand&&document.execCommand('copy');done();});
+    else{el.select();document.execCommand&&document.execCommand('copy');done();}
+  }
   // ════════════════════════════════════════════════════════
   // FUEL — fill-ups (date, gallons, total cost). The fuel price for any date is the average of
   // every fill-up from 3 days before to 3 days after that date (7-day window, your own days, not a
@@ -2393,9 +2516,10 @@
   // Permanent keys LS_SHIFT (v2, migrated from v1) and LS_SHMETA (never cleared).
   // ════════════════════════════════════════════════════════
   const LS_SHIFT='tc_shift_v1', LS_SHMETA='tc_shmeta_v1';
+  const SH_FIELDS=[['ad','Arrival & departure times'],['pump','Pump start / stop times'],['lvl','Tank levels'],['wo','Work order #']];
   let shSel=null;   // the load being viewed (view only, not saved)
   function shBlankStop(){return {note:'',name:'',arr:'',dep:'',odo:'',fs:'',fe:'',bbl:'',wo:'',wt:'',lsF:'',lsI:'',leF:'',leI:''};}
-  function shDefault(){return {v:2,unit:miles.unit,tz:'',date:tcToday(),tStart:'',tEnd:'',nextId:1,items:[]};}
+  function shDefault(){return {v:2,unit:miles.unit,tz:'',date:tcToday(),tStart:'',tEnd:'',yardOut:'',yardIn:'',sites:[],nextSite:1,nextId:1,items:[]};}
   let shift=tcLoad(LS_SHIFT,shDefault);
   let shMeta=tcLoad(LS_SHMETA,()=>({v:1,company:'',driver:'',client:'',perLoad:false,clients:'',rate:'',share:'30',cap:''}));
   (function normalizeShift(){
@@ -2414,7 +2538,11 @@
     shift.unit=shift.unit==='km'?'km':'mi';
     shift.tz=TRIP_TZS.some(z=>z[0]===shift.tz)?shift.tz:'';
     shift.date=/^\d{4}-\d{2}-\d{2}$/.test(str(shift.date))?shift.date:tcToday();
-    shift.tStart=time(shift.tStart);shift.tEnd=time(shift.tEnd);
+    shift.tStart=time(shift.tStart);shift.tEnd=time(shift.tEnd);shift.yardOut=time(shift.yardOut);shift.yardIn=time(shift.yardIn);
+    // Timeline: extra sites (shop, fuel, wash…) beside the loads' own stops
+    let maxSite=0;
+    shift.sites=(Array.isArray(shift.sites)?shift.sites:[]).filter(x=>x&&typeof x==='object').map((x,i)=>{const id=Number.isInteger(x.id)?x.id:(i+1);maxSite=Math.max(maxSite,id);return {id,name:str(x.name).slice(0,60),arr:time(x.arr),dep:time(x.dep)};});
+    shift.nextSite=Math.max(Number.isInteger(shift.nextSite)?shift.nextSite:1,maxSite+1);
     let maxId=0;
     // v1 "state change" lines are gone (IFTA tab owns states); loads are kept
     shift.items=(Array.isArray(shift.items)?shift.items:[]).filter(x=>x&&x.type==='load').map((x,i)=>{
@@ -2434,12 +2562,16 @@
     shift.v=2;
     ['company','driver','client','clients','rate','cap'].forEach(k=>{shMeta[k]=str(shMeta[k]);});
     shMeta.share=(shMeta.share===undefined||shMeta.share===null||shMeta.share==='')?'30':str(shMeta.share);
+    shMeta.hide=(Array.isArray(shMeta.hide)?shMeta.hide:[]).filter(k=>SH_FIELDS.some(f=>f[0]===k));
     shMeta.lastTicket=str(shMeta.lastTicket).slice(0,20);shMeta.lastPu=str(shMeta.lastPu).slice(0,60);shMeta.lastDr=str(shMeta.lastDr).slice(0,60);
     shMeta.perLoad=shMeta.perLoad===true;shMeta.v=1;
   })();
   function shSave(){tcSave(LS_SHIFT,shift);}
   function shFind(id){return shift.items.find(x=>x.id===id);}
   function shMetaSave(){tcSave(LS_SHMETA,shMeta);}
+  // Fields a company may not care about can be hidden (the data you already entered is kept; hidden boxes just stop showing).
+  function shHideApply(){const p=document.getElementById('tab-shift');if(!p)return;SH_FIELDS.forEach(f=>p.classList.toggle('hide-'+f[0],(shMeta.hide||[]).includes(f[0])));}
+  function shHideToggle(k,show){const h=new Set(shMeta.hide||[]);if(show)h.delete(k);else h.add(k);shMeta.hide=[...h];shMetaSave();shHideApply();}
   function shClients(){
     const seen=new Set(),out=[];
     [shMeta.client].concat(String(shMeta.clients||'').split('\n')).forEach(c=>{c=(c||'').trim();if(c&&!seen.has(c)){seen.add(c);out.push(c);}});
@@ -2546,7 +2678,7 @@
     shift.tStart=on||'';shift.tEnd=off||'';shSave();
     if(document.getElementById('shTStart'))shRender();
   }
-  function shStop(id,which,f,v){const x=shFind(id);if(!x)return;x[which][f]=v;shSave();if(f==='name')shTrackNames();shDerived();}
+  function shStop(id,which,f,v){const x=shFind(id);if(!x)return;x[which][f]=v;shSave();if(f==='name'){shTrackNames();shLocRow(id,which);}shDerived();}
   function shToggle(id,open){const x=shFind(id);if(x&&x.open!==open){x.open=open;shSave();}}
   function shStamp(id,which,kind){   // kind 'ad' = arrive/depart, 'pump' = pump start/stop
     const x=shFind(id);if(!x)return;
@@ -2605,43 +2737,46 @@
 
   // ── rendering ──
   function shNum(id,w,ph,val,call,extra){return `<input type="number" inputmode="decimal" step="any" min="0" class="oin" ${extra||''} placeholder="${ph}" value="${tcEsc(val)}" oninput="${call}">`;}
+  // One field per row, full width, each stamp button on its own row (nothing sits beside a field), so it stays usable at any text size.
+  const shStampCfg={arr:['Arrival time','Arrive','🕒 Set ARRIVAL time now','A'],dep:['Departure time','Depart','🕒 Set DEPARTURE time now','D'],fs:['Pump start','Pump start','▶ START pump now','S'],fe:['Pump stop','Pump stop','■ STOP pump now','E']};
   function shStopHtml(x,which,title){
     const st=x[which],n=which==='pu'?'p':'d',id=x.id,pu=which==='pu';
-    const lvl=pu?`<div class="lvl"><span class="pday">Level</span>
-      <span class="lv">start</span><input type="text" inputmode="decimal" class="tin" maxlength="5" placeholder="ft" value="${tcEsc(st.lsF)}" aria-label="Level start feet" oninput="shStop(${id},'pu','lsF',this.value)"><span class="lv">ft</span><input type="text" inputmode="decimal" class="tin" maxlength="5" placeholder="in" value="${tcEsc(st.lsI)}" aria-label="Level start inches" oninput="shStop(${id},'pu','lsI',this.value)"><span class="lv">in</span>
-      <span class="lv">end</span><input type="text" inputmode="decimal" class="tin" maxlength="5" placeholder="ft" value="${tcEsc(st.leF)}" aria-label="Level end feet" oninput="shStop(${id},'pu','leF',this.value)"><span class="lv">ft</span><input type="text" inputmode="decimal" class="tin" maxlength="5" placeholder="in" value="${tcEsc(st.leI)}" aria-label="Level end inches" oninput="shStop(${id},'pu','leI',this.value)"><span class="lv">in</span></div>`:'';
-    const F=(l,h)=>`<label class="fld"><span class="fl">${l}</span>${h}</label>`;
-    return `<div class="tg tg-head"><span>${title}</span><span>Arrive</span><span>Depart</span><span>Odo ${shift.unit}</span><span></span></div>
-    <div class="tg tg-row">
-      ${F(title,`<input class="loc-input" type="text" maxlength="60" placeholder="Location name" value="${tcEsc(st.name)}" oninput="shStop(${id},'${which}','name',this.value)">`).replace('class="fld"','class="fld wide"')}
-      ${F('Arrive',`<input type="time" class="tin" id="sh${n}A${id}" value="${tcEsc(st.arr)}" aria-label="Arrive" oninput="shStop(${id},'${which}','arr',this.value)">`)}
-      ${F('Depart',`<input type="time" class="tin" id="sh${n}D${id}" value="${tcEsc(st.dep)}" aria-label="Depart" oninput="shStop(${id},'${which}','dep',this.value)">`)}
-      ${F('Odo '+shift.unit,`<input type="number" inputmode="decimal" step="any" min="0" class="oin" id="sh${n}O${id}" placeholder="odo" value="${tcEsc(st.odo)}" aria-label="Odometer" oninput="shStop(${id},'${which}','odo',this.value)">`)}
-      <button class="now-btn" onclick="shStamp(${id},'${which}','ad')">Now</button>
-    </div>
-    <div class="tg tg-head"><span>${pu?'Loading':'Unloading'}</span><span>Pump start</span><span>Pump stop</span><span>BBL</span><span></span></div>
-    <div class="tg tg-row">
-      <span class="pday" id="shF${n}${id}" style="font-size:10px;font-weight:700;color:var(--green);line-height:1.3;"></span>
-      ${F('Pump start',`<input type="time" class="tin" id="sh${n}S${id}" value="${tcEsc(st.fs)}" aria-label="Pump start" oninput="shStop(${id},'${which}','fs',this.value)">`)}
-      ${F('Pump stop',`<input type="time" class="tin" id="sh${n}E${id}" value="${tcEsc(st.fe)}" aria-label="Pump stop" oninput="shStop(${id},'${which}','fe',this.value)">`)}
-      ${pu?F('BBL',`<input type="number" inputmode="decimal" step="any" min="0" class="oin" placeholder="BBL" value="${tcEsc(st.bbl)}" aria-label="BBL" oninput="shStop(${id},'pu','bbl',this.value)">`):`<button class="now-btn" id="shNB${id}" onclick="shToggleNote(${id})">📝 Note</button>`}
-      <button class="now-btn" onclick="shStamp(${id},'${which}','pump')">Now</button>
-    </div>
-    ${lvl}${pu?'':`<div class="lvl" id="shNR${id}" style="display:${st.note?'flex':'none'}"><span class="pday">Note</span><input type="text" class="loc-input" style="flex:1" maxlength="120" placeholder="e.g. short unload, 40 BBL left on truck" value="${tcEsc(st.note)}" aria-label="Drop-off note" oninput="shStop(${id},'dr','note',this.value)"></div>`}`;
+    const T=(f,cls)=>{const c=shStampCfg[f];return `<div class="sf ${cls}"><label class="fl" for="sh${n}${c[3]}${id}">${c[0]}</label><input type="time" class="tin" id="sh${n}${c[3]}${id}" value="${tcEsc(st[f])}" aria-label="${c[1]}" oninput="shStop(${id},'${which}','${f}',this.value)"><button class="sbtn" onclick="shStampOne(${id},'${which}','${f}')">${c[2].replace('pump',pu?'loading pump':'unloading pump')}</button></div>`;};
+    const lv=(k,lab)=>`<div class="sf f-lvl"><div class="fl">${lab}</div><div class="sf-pair"><input type="text" inputmode="decimal" class="tin" maxlength="5" placeholder="ft" value="${tcEsc(st[k+'F'])}" aria-label="Level ${k==='ls'?'start':'end'} feet" oninput="shStop(${id},'pu','${k}F',this.value)"><span class="lv">ft</span><input type="text" inputmode="decimal" class="tin" maxlength="5" placeholder="in" value="${tcEsc(st[k+'I'])}" aria-label="Level ${k==='ls'?'start':'end'} inches" oninput="shStop(${id},'pu','${k}I',this.value)"><span class="lv">in</span></div></div>`;
+    return `<div class="stophead">${title}</div>
+    <div class="sf"><label class="fl">${title} name</label><input class="loc-input" type="text" maxlength="60" list="shLocList" autocomplete="off" placeholder="Location name" value="${tcEsc(st.name)}" oninput="shStop(${id},'${which}','name',this.value)"></div>
+    <div class="locrow" id="shLR${id}${which}">${shLocRowHtml(id,which)}</div>
+    ${T('arr','f-ad')}
+    <div class="sf"><label class="fl" for="sh${n}O${id}">Odometer (${shift.unit})</label><input type="number" inputmode="decimal" step="any" min="0" class="oin" id="sh${n}O${id}" placeholder="odometer" value="${tcEsc(st.odo)}" aria-label="Odometer" oninput="shStop(${id},'${which}','odo',this.value)"></div>
+    ${pu?lv('ls','Tank level — start'):''}
+    ${T('fs','f-pump')}${T('fe','f-pump')}
+    <div class="sflow f-pump" id="shF${n}${id}"></div>
+    ${pu?lv('le','Tank level — end'):''}
+    ${pu?`<div class="sf"><label class="fl">BBL loaded</label><input type="number" inputmode="decimal" step="any" min="0" class="oin" placeholder="BBL" value="${tcEsc(st.bbl)}" aria-label="BBL" oninput="shStop(${id},'pu','bbl',this.value)"></div>`:''}
+    ${T('dep','f-ad')}
+    ${pu?'':`<div class="sf"><button class="sbtn ghost" id="shNB${id}" onclick="shToggleNote(${id})">📝 Add a note (short unload, etc.)</button></div><div class="sf" id="shNR${id}" style="display:${st.note?'block':'none'}"><label class="fl">Drop-off note</label><input type="text" class="loc-input" maxlength="120" placeholder="e.g. short unload, 40 BBL left on truck" value="${tcEsc(st.note)}" aria-label="Drop-off note" oninput="shStop(${id},'dr','note',this.value)"></div>`}`;
   }
-  function shToggleNote(id){const e=document.getElementById('shNR'+id);if(!e)return;const on=e.style.display==='none';e.style.display=on?'flex':'none';if(on){const i=e.querySelector('input');if(i)i.focus();}}
+  // set one time field to "now" (asks first if it already has a time)
+  function shStampOne(id,which,f){
+    const x=shFind(id);if(!x)return;const st=x[which],n=which==='pu'?'p':'d';
+    if(st[f]&&!confirm('Replace '+st[f]+' with the current time?'))return;
+    const t=shNowHHMM();st[f]=t;const e=document.getElementById('sh'+n+shStampCfg[f][3]+id);if(e)e.value=t;
+    shSave();shDerived();
+  }
+  function shToggleNote(id){const e=document.getElementById('shNR'+id);if(!e)return;const on=e.style.display==='none';e.style.display=on?'block':'none';if(on){const i=e.querySelector('input');if(i)i.focus();}}
   function shItemSet(id,f,v){const x=shFind(id);if(!x)return;x[f]=v;shSave();if(f==='wt')shTrackTicket();}
-  function shLoadBottomHtml(x){
-    return `<div class="lvl"><span class="pday">WO #</span><input type="text" class="tin wide" maxlength="20" value="${tcEsc(x.wo)}" aria-label="Work order number" oninput="shItemSet(${x.id},'wo',this.value)"><span class="lv">Ticket #</span><input type="text" class="tin wide" maxlength="20" value="${tcEsc(x.wt)}" aria-label="Water ticket number" oninput="shItemSet(${x.id},'wt',this.value)"></div>`;
+  function shLoadTopHtml(x){
+    return `<div class="sf"><label class="fl">Water ticket # (from the book)</label><input type="text" class="loc-input" maxlength="20" value="${tcEsc(x.wt)}" aria-label="Water ticket number" oninput="shItemSet(${x.id},'wt',this.value)"></div>
+    <div class="sf f-wo"><label class="fl">Work order #</label><input type="text" class="loc-input" maxlength="20" value="${tcEsc(x.wo)}" aria-label="Work order number" oninput="shItemSet(${x.id},'wo',this.value)"></div>`;
   }
   function shClientHtml(x){
     if(!shMeta.perLoad)return '';
     const opts=shClients();if(x.client&&!opts.includes(x.client))opts.push(x.client);
-    return `<div class="lvl"><span class="pday">Client</span><select class="sel" style="flex:1;max-width:none;" aria-label="Client for this load" onchange="shItemSet(${x.id},'client',this.value)"><option value="">${opts.length?'Select client':'Add clients in Settings'}</option>${opts.map(c=>`<option value="${tcEsc(c)}"${x.client===c?' selected':''}>${tcEsc(c)}</option>`).join('')}</select></div>`;
+    return `<div class="sf"><label class="fl">Client</label><select class="sel" style="width:100%;max-width:none;" aria-label="Client for this load" onchange="shItemSet(${x.id},'client',this.value)"><option value="">${opts.length?'Select client':'Add clients in Settings'}</option>${opts.map(c=>`<option value="${tcEsc(c)}"${x.client===c?' selected':''}>${tcEsc(c)}</option>`).join('')}</select></div>`;
   }
   function shSelect(id){shSel=id;shRender();}
   function shRender(){
-    if(!shift.items.length&&!shift.tStart&&!shift.tEnd&&shift.date!==tcToday()){shift.date=tcToday();shSave();}   // an untouched log always opens on today
+    if(!shift.items.length&&!shift.tStart&&!shift.tEnd&&!shift.yardOut&&!shift.yardIn&&shift.date!==tcToday()){shift.date=tcToday();shSave();}   // an untouched log always opens on today
     document.getElementById('shDate').value=shift.date;
     shSyncIds();
     document.getElementById('shTStart').value=shift.tStart;
@@ -2657,8 +2792,9 @@
     const sx=shift.items.find(x=>x.id===shSel),sn=sx?shift.items.indexOf(sx)+1:0;
     document.getElementById('shItems').innerHTML=sx?`<div class="job shload">
         <div class="job-head"><span class="job-tag">LOAD ${sn}</span><span class="job-sub" id="shSN${sx.id}"></span><span class="job-dist" id="shJD${sx.id}"></span><button class="del-btn" onclick="shDelItem(${sx.id})">✕</button></div>
-        ${shStopHtml(sx,'pu','Pickup')}${shStopHtml(sx,'dr','Drop-off')}${shLoadBottomHtml(sx)}${shClientHtml(sx)}</div>`
+        ${shLoadTopHtml(sx)}${shClientHtml(sx)}${shStopHtml(sx,'pu','Pickup')}${shStopHtml(sx,'dr','Drop-off')}</div>`
       :'<div class="empty-note">Tap <b>+ Load</b> for each pickup + drop-off.</div>';
+    shLocList();shHideApply();
     shDerived();
   }
   function shFlowText(st,bbl){
@@ -2678,7 +2814,7 @@
       }
       ['pu','dr'].forEach(w=>{const e=document.getElementById('shF'+(w==='pu'?'p':'d')+x.id);if(e)e.innerHTML=shFlowText(x[w],x.pu.bbl);});
     });
-    document.getElementById('shHours').textContent=shHoursText()||'—';shClockSum();
+    document.getElementById('shHours').textContent=shHoursText()||'—';shStripUpdate();
     const T=shTotals(),sum=document.getElementById('shSum');
     if(sum){
       const r=(l,v,alt)=>`<div class="row${alt?' alt':''}"><div class="st-name">${l}</div><div class="ctrl"><span class="out green" style="font-size:15px">${v}</span></div></div>`;
@@ -2865,12 +3001,12 @@
     d.days=Array.isArray(d.days)?d.days.filter(x=>x&&typeof x==='object'&&x.date):[];d.v=1;return d;
   }
   function shLogDay(){
-    const hasIfta=miles.lines.some(l=>l.odo!==null||l.state),hasShift=shift.items.length||shift.tStart||shift.tEnd;
+    const hasIfta=miles.lines.some(l=>l.odo!==null||l.state),hasShift=shift.items.length||shift.tStart||shift.tEnd||shift.yardOut||shift.yardIn||shift.sites.length;
     if(!hasIfta&&!hasShift){tcToast('Nothing to log yet');return;}
     const seg=milesSegments(),date=shift.date||tcToday();
     const snap={id:Date.now(),date,savedAt:new Date().toISOString(),unit:miles.unit,driver:shMeta.driver,
       ifta:{lines:miles.lines.map(l=>({state:l.state,odo:l.odo})),by:seg.by,total:seg.total,first:shIftaFirst(),last:shIftaLast()},
-      shift:JSON.parse(JSON.stringify({date:shift.date,tStart:shift.tStart,tEnd:shift.tEnd,tz:shift.tz,items:shift.items})),
+      shift:JSON.parse(JSON.stringify({date:shift.date,tStart:shift.tStart,tEnd:shift.tEnd,yardOut:shift.yardOut,yardIn:shift.yardIn,sites:shift.sites,tz:shift.tz,items:shift.items})),
       totals:shTotals()};
     const log=daylogLoad(),i=log.days.findIndex(x=>x.date===date);
     if(i>=0)log.days[i]=snap;else log.days.push(snap);   // logging the same date again replaces it
@@ -2885,46 +3021,197 @@
     }
   }
 
-  // ── Shift Log header: collapse once the day's times are in (per-device convenience) ──
-  function shClockSet(collapsed){
-    const b=document.getElementById('shClockBody'),h=document.getElementById('shClockBtn');if(!b||!h)return;
-    b.style.display=collapsed?'none':'';h.textContent=collapsed?'▸ Show':'▾ Hide';
-    try{localStorage.setItem('tc_shclock_ui',collapsed?'1':'0');}catch(e){}
-    shClockSum();
-  }
-  function shClockToggle(){shClockSet(document.getElementById('shClockBody').style.display!=='none');}
-  function shClockSum(){
-    const e=document.getElementById('shClockSum');if(!e)return;
-    const b=document.getElementById('shClockBody'),col=b&&b.style.display==='none';
-    const t12=v=>{if(!v)return '';const [h,m]=v.split(':').map(Number);return ((h+11)%12+1)+':'+String(m).padStart(2,'0')+(h<12?'a':'p');};
-    e.textContent=col?[shift.date,(shift.tStart||shift.tEnd)?t12(shift.tStart)+'–'+t12(shift.tEnd):'',shHoursText()].filter(Boolean).join(' · '):'';
-  }
-  (function(){let c=false;try{c=localStorage.getItem('tc_shclock_ui')==='1';}catch(e){}if(c)shClockSet(true);})();
-
   // ── Truck / Trailer ID: one stored value (the Flow tab's LS_FLOW), editable from either tab ──
   function shSyncIds(){
     [['fTruck','shTruck'],['fTrailer','shTrailer']].forEach(([f,h])=>{const a=document.getElementById(f),b=document.getElementById(h);if(a&&b&&document.activeElement!==b&&b.value!==a.value)b.value=a.value;});
+    shStripUpdate();
   }
   function shSetIds(){
     const t=document.getElementById('shTruck'),r=document.getElementById('shTrailer'),ft=document.getElementById('fTruck'),fr=document.getElementById('fTrailer');
-    if(!t||!ft)return;ft.value=t.value;fr.value=r.value;flowSaveIds();
+    if(!t||!ft)return;ft.value=t.value;fr.value=r.value;flowSaveIds();shStripUpdate();
   }
 
-  // ── Screen size for the Shift tab (per device): Default, ×1, ×2, ×3 — bigger text, fewer fields per row ──
-  function shScaleSet(n){
-    n=[0,1,2,3].includes(n)?n:0;
-    const p=document.getElementById('tab-shift');if(!p)return;
-    p.classList.remove('sc0','sc1','sc2','sc3');p.classList.add('sc'+n);
-    [0,1,2,3].forEach(i=>{const b=document.getElementById('shSc'+i);if(b)b.classList.toggle('active',i===n);});
-    try{localStorage.setItem('tc_shscale_ui',String(n));}catch(e){}
+  try{localStorage.removeItem('tc_shscale_ui');}catch(e){}   // the old screen-size zoom is gone
+
+  // ── Locations from the Shift tab ──────────────────────────────────────────
+  // Typing a pickup/drop name suggests places from your Locations list (and the company list).
+  // Under the name: save an unknown place with a GPS pin taken right where you are.
+  // Two pins as on the Locations tab: Routing (where navigation should take you: the road, the gate) and Site (the real spot).
+  const shNorm=v=>String(v||'').trim().toLowerCase();
+  function shLocList(){
+    let dl=document.getElementById('shLocList');
+    if(!dl){dl=document.createElement('datalist');dl.id='shLocList';document.body.appendChild(dl);}
+    const names=[],seen=new Set();
+    [...getLocations(),...(typeof globalLocations!=='undefined'?globalLocations:[])].forEach(l=>{const k=shNorm(l.name);if(k&&!seen.has(k)){seen.add(k);names.push(l.name);}});
+    dl.innerHTML=names.sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${tcEsc(n)}"></option>`).join('');
   }
-  (function(){let n=0;try{n=parseInt(localStorage.getItem('tc_shscale_ui')||'0',10)||0;}catch(e){}shScaleSet(n);})();
+  function shLocFind(name){
+    const k=shNorm(name);if(!k)return null;
+    const mine=getLocations().find(l=>shNorm(l.name)===k);if(mine)return {loc:mine,mine:true};
+    const co=(typeof globalLocations!=='undefined'?globalLocations:[]).find(l=>shNorm(l.name)===k);
+    return co?{loc:co,mine:false}:null;
+  }
+  function shLocRowHtml(id,which){
+    const x=shFind(id);if(!x)return '';const name=x[which].name;if(!shNorm(name))return '';
+    const f=shLocFind(name),b=(k,l)=>`<button class="locbtn" onclick="shLocSave(${id},'${which}','${k}')">${l}</button>`;
+    if(!f)return `<span class="loctxt">Not in Locations yet — save it with a pin from where you are:</span>${b('gps1','🧭 Routing pin here')}${b('gps2','📍 Site pin here')}${b('none','＋ Name only')}`;
+    if(!f.mine)return '<span class="loctxt">✓ Company location</span>';
+    const miss=[!f.loc.gps1?b('gps1','🧭 Add Routing pin here'):'',!f.loc.gps2?b('gps2','📍 Add Site pin here'):''].join('');
+    return miss?`<span class="loctxt">✓ In your Locations — missing a pin:</span>${miss}`:'<span class="loctxt">✓ In your Locations (Routing + Site pins)</span>';
+  }
+  function shLocRow(id,which){const e=document.getElementById('shLR'+id+which);if(e)e.innerHTML=shLocRowHtml(id,which);}
+  function locGetPos(cb){
+    if(!navigator.geolocation){tcToast('GPS not available on this device');return;}
+    tcToast('Getting GPS…');
+    navigator.geolocation.getCurrentPosition(p=>cb({lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy}),
+      e=>tcToast(e&&e.code===1?'Location permission denied — allow it in the browser settings':'Could not get GPS — try again outside'),
+      {enableHighAccuracy:true,timeout:20000,maximumAge:0});
+  }
+  const locFmt=p=>p.lat.toFixed(6)+', '+p.lng.toFixed(6);
+  function locAccOk(p){return !(p.acc>40)||confirm('GPS is only accurate to about '+Math.round(p.acc)+' m right now. Save this pin anyway?');}
+  function shLocSave(id,which,kind){
+    const x=shFind(id);if(!x)return;const name=x[which].name.trim();if(!name)return;
+    const refresh=()=>{shLocRow(id,which);if(which==='pu'||which==='dr'){const o=which==='pu'?'dr':'pu';shLocRow(id,o);}shLocList();if(typeof renderLocations==='function')renderLocations();};
+    if(kind==='none'){
+      if(!shLocFind(name)){const e={id:Date.now(),name,gps1:'',gps2:'',note:'',submitted:false};saveLocations([...getLocations(),e]);}
+      refresh();tcToast('Saved “'+name+'” to Locations (no pin yet)');return;
+    }
+    locGetPos(p=>{
+      if(!locAccOk(p))return;
+      const locs=getLocations(),k=shNorm(name),cur=locs.find(l=>shNorm(l.name)===k);
+      if(cur){cur[kind]=locFmt(p);saveLocations(locs);}
+      else{const e={id:Date.now(),name,gps1:'',gps2:'',note:'',submitted:false};e[kind]=locFmt(p);saveLocations([...locs,e]);
+        if(localStorage.getItem('gh-token')&&typeof pushLocationToGitHub==='function')pushLocationToGitHub(e);}
+      refresh();tcToast('Saved '+(kind==='gps1'?'Routing':'Site')+' pin for “'+name+'” (±'+Math.round(p.acc)+' m)');
+    });
+  }
+  // “📍 Here” on the Locations tab: fill a pin box with where you are right now
+  function locUseHere(inputId){locGetPos(p=>{if(!locAccOk(p))return;document.getElementById(inputId).value=locFmt(p);tcToast('Pin set (±'+Math.round(p.acc)+' m)');});}
+
+  // ── On Duty tab (the start of every shift) ──
+  function dutyDriver(v){shMeta.driver=v;shMetaSave();if(typeof stRender==='function')stRender();}
+  function dutyOn(){
+    if(shift.tStart&&!confirm('Already on duty since '+shT12(shift.tStart)+'. Replace with the current time?'))return;
+    shift.tStart=shNowHHMM();shSave();shRender();shToPay();tcToast('On duty '+shT12(shift.tStart));
+  }
+  function dutyOff(){
+    if(shift.tEnd&&!confirm('Already off duty at '+shT12(shift.tEnd)+'. Replace with the current time?'))return;
+    shift.tEnd=shNowHHMM();shSave();shRender();shToPay();tcToast('Off duty '+shT12(shift.tEnd));
+  }
+  const shT12=t=>{if(!t)return '';const [h,m]=t.split(':').map(Number);return ((h+11)%12+1)+':'+String(m).padStart(2,'0')+' '+(h<12?'AM':'PM');};
+  // the one-line strip at the top of the Shift tab
+  function shStripUpdate(){
+    const e=document.getElementById('shStripTxt');if(!e)return;
+    const ids=[(document.getElementById('fTruck')||{}).value,(document.getElementById('fTrailer')||{}).value].filter(Boolean).join(' / ');
+    e.textContent=[shift.date,ids,shift.tStart?'on duty '+shT12(shift.tStart):'not on duty yet'].filter(Boolean).join(' · ');
+    const d=document.getElementById('dutyDriver');if(d&&document.activeElement!==d)d.value=shMeta.driver||'';
+  }
+  // ════════════════════════════════════════════════════════
+  // TIMELINE — one list of the day's stamps: on duty (yard) → left yard → site arrive/leave … → off duty (yard).
+  // Nothing is stored twice: yard times are the Shift start/end, site times are the Shift loads' pickup/drop-off
+  // arrive/depart fields. Only the "left yard" time and extra sites (shop, fuel, wash…) live here, inside the shift
+  // data (shift.yardOut, shift.sites), so Log Day / Clear handle them with the rest of the day.
+  // ════════════════════════════════════════════════════════
+  let trkLastUndo=null;   // in-memory only
+  const trkDiff=(a,b)=>{if(!a||!b)return null;const x=a.split(':').map(Number),y=b.split(':').map(Number);return (((y[0]*60+y[1])-(x[0]*60+x[1]))%1440+1440)%1440;};
+  const trkMin=t=>{const x=t.split(':').map(Number);return x[0]*60+x[1];};
+  const trkT12=t=>{if(!t)return '';const [h,m]=t.split(':').map(Number);return ((h+11)%12+1)+':'+String(m).padStart(2,'0')+' '+(h<12?'AM':'PM');};
+  // every stop of the day (load pickups/drop-offs + extra sites) in the order they happened
+  function trkStops(){
+    const base=[];
+    shift.items.forEach((x,i)=>['pu','dr'].forEach(w=>base.push({key:'L'+x.id+w,kind:'load',load:x,which:w,obj:x[w],def:'Load '+(i+1)+(w==='pu'?' pickup':' drop-off')})));
+    (shift.sites||[]).forEach(s=>base.push({key:'S'+s.id,kind:'site',site:s,obj:s,def:'Site'}));
+    const ref=shift.tStart||shift.yardOut||'';
+    const rel=t=>ref?trkDiff(ref,t):trkMin(t);
+    let prev=-1;
+    base.forEach((s,i)=>{
+      const t=s.obj.arr||s.obj.dep;
+      s.k=t?rel(t):prev+0.001;s.i=i;prev=s.k;
+    });
+    return base.sort((a,b)=>a.k-b.k||a.i-b.i);
+  }
+  const trkName=s=>(s.obj.name||'').trim()||s.def;
+  // the site button: arrive at the next stop, or leave the one you are at
+  function trkNext(){
+    const st=trkStops(),open=st.find(s=>s.obj.arr&&!s.obj.dep);
+    if(open)return {label:'Left '+trkName(open),run:()=>trkSet(open.obj,'dep')};
+    const pend=st.find(s=>!s.obj.arr);
+    if(pend)return {label:'Arrived '+trkName(pend),run:()=>trkSet(pend.obj,'arr')};
+    return {label:'Arrived at a new site',run:()=>trkAddSite()};
+  }
+  function trkYard(f){
+    if(shift[f]&&!confirm((f==='yardIn'?'Arrived at yard':'Left yard')+' is already stamped '+trkT12(shift[f])+'. Replace with now?'))return;
+    trkSet(shift,f);
+  }
+  // set a time field to "now", remembering the old value so it can be undone
+  function trkSet(obj,f,toPay){
+    const prev=obj[f]||'';obj[f]=shNowHHMM();
+    trkLastUndo={obj,f,prev};shSave();trkAfter(toPay);
+  }
+  function trkAfter(toPay){shRenderKeep();if(toPay&&typeof shToPay==='function')shToPay();trkRender();}
+  function trkNextRun(){const n=trkNext();n.run();}
+  function trkAddSite(){
+    if(!Array.isArray(shift.sites))shift.sites=[];
+    const s={id:shift.nextSite||1,name:'',arr:shNowHHMM(),dep:''};shift.nextSite=s.id+1;shift.sites.push(s);
+    trkLastUndo={site:s};shSave();trkRender();
+  }
+  function trkDelSite(id){
+    if(!confirm('Delete this site from the timeline?'))return;
+    shift.sites=(shift.sites||[]).filter(s=>s.id!==id);shSave();trkRender();
+  }
+  function trkUndo(){
+    const u=trkLastUndo;if(!u){tcToast('Nothing to undo');return;}
+    if(u.site)shift.sites=(shift.sites||[]).filter(s=>s!==u.site);else u.obj[u.f]=u.prev;
+    trkLastUndo=null;shSave();trkAfter(u.f==='tStart'||u.f==='tEnd');
+  }
+  // edit from the list (times and site names)
+  function trkEdit(kind,id,f,v){
+    if(kind==='shift')shift[f]=v;
+    else if(kind==='site'){const s=(shift.sites||[]).find(x=>x.id===id);if(!s)return;s[f]=v;}
+    else{const x=shFind(id[0]);if(!x)return;x[id[1]][f]=v;}
+    shSave();
+    if(kind==='shift'&&(f==='tStart'||f==='tEnd'))shToPay();
+    shRenderKeep();trkRender();
+  }
+  // refresh the Shift/On Duty tabs' fields without losing which load is shown
+  function shRenderKeep(){if(typeof shRender==='function')shRender();}
+  function trkHeader(){
+    const n=trkNext(),b=document.getElementById('trkNext');if(b){b.textContent=n.label;}
+    const d=document.getElementById('trkDate');if(d)d.textContent=shift.date||'';
+    
+  }
+  function trkGap(label,mins){return mins===null||mins===undefined?'':`<div class="trk-gap">↓ ${label} ${shDur(mins)||'0 min'}</div>`;}
+  function trkLine(icon,label,kind,id,f,val,cls){
+    const idArg=Array.isArray(id)?`[${id[0]},'${id[1]}']`:(id===null?'null':id);
+    return `<div class="trk-line ${cls||''}"><span class="trk-lbl">${icon} ${tcEsc(label)}</span><input type="time" class="tin" value="${tcEsc(val||'')}" aria-label="${tcEsc(label)}" onchange="trkEdit('${kind}',${idArg},'${f}',this.value)"></div>`;
+  }
+  function trkRender(){
+    const el=document.getElementById('trkList');if(!el)return;
+    const st=trkStops();let h='',lastLeave=shift.yardOut||'';
+    h+=trkLine('🟢','On duty (at yard)','shift',null,'tStart',shift.tStart,'yard');
+    h+=trkGap('at yard',(shift.tStart&&shift.yardOut)?trkDiff(shift.tStart,shift.yardOut):null);
+    h+=trkLine('🚚','Left yard','shift',null,'yardOut',shift.yardOut,'yard');
+    st.forEach(s=>{
+      const nm=trkName(s),idv=s.kind==='load'?[s.load.id,s.which]:s.site.id,k=s.kind==='load'?'stop':'site';
+      h+=trkGap('driving',(lastLeave&&s.obj.arr)?trkDiff(lastLeave,s.obj.arr):null);
+      if(s.kind==='site')h+=`<div class="trk-site"><input class="loc-input" type="text" maxlength="60" list="shLocList" autocomplete="off" placeholder="Site name" value="${tcEsc(s.obj.name)}" aria-label="Site name" oninput="trkEdit('site',${s.site.id},'name',this.value)"><button class="del-btn" onclick="trkDelSite(${s.site.id})" aria-label="Delete site">✕</button></div>`;
+      h+=trkLine('📍','Arrived — '+nm,k,idv,'arr',s.obj.arr,'site');
+      h+=trkGap('on site',(s.obj.arr&&s.obj.dep)?trkDiff(s.obj.arr,s.obj.dep):null);
+      h+=trkLine('➡','Left — '+nm,k,idv,'dep',s.obj.dep,'site');
+      if(s.obj.dep)lastLeave=s.obj.dep;
+    });
+    h+=trkGap('driving back',(lastLeave&&shift.yardIn)?trkDiff(lastLeave,shift.yardIn):null);
+    h+=trkLine('🏁','Arrived at yard','shift',null,'yardIn',shift.yardIn,'yard');
+    h+=trkGap('at yard',(shift.yardIn&&shift.tEnd)?trkDiff(shift.yardIn,shift.tEnd):null);
+    h+=trkLine('🔴','Off duty','shift',null,'tEnd',shift.tEnd,'yard');
+    el.innerHTML=h;trkHeader();
+  }
   // ════════════════════════════════════════════════════════
   // MODULES — Settings checkboxes decide which tabs show in the tab bar.
   // Permanent key LS_MODS. Unchecking only hides the tab; its data is kept.
   // ════════════════════════════════════════════════════════
   const LS_MODS='tc_modules_v1';
-  const MODULES=[['calc','⚗️ Calculator'],['flow','🌊 Flow Rate'],['miles','🛣️ IFTA'],['trip','🚚 Trip'],['shift','📋 Shift Report'],['fuel','⛽ Fuel'],['pay','🗓️ Pay'],['locs','📍 Locations']];
+  const MODULES=[['duty','🟢 On Duty'],['shift','📋 Shift Report'],['miles','🛣️ IFTA'],['fuel','⛽ Fuel'],['track','⏱ Timeline'],['calc','⚗️ Calculator'],['flow','🌊 Flow Rate'],['trip','🚚 Trip'],['pay','🗓️ Pay'],['locs','📍 Locations']];
   let mods=tcLoad(LS_MODS,()=>({v:1,hidden:[]}));
   mods.hidden=(Array.isArray(mods.hidden)?mods.hidden:[]).filter(id=>MODULES.some(m=>m[0]===id));
   mods.v=1;
@@ -2969,6 +3256,7 @@
     const g=id=>document.getElementById(id);if(!g('stDriver'))return;
     if(document.activeElement!==g('stDriver'))g('stDriver').value=shMeta.driver;
     g('stCompany').value=shMeta.company;g('stClient').value=shMeta.client;
+    g('shFieldList').innerHTML=SH_FIELDS.map((f,i)=>`<label class="mod-row${i%2?' alt':''}"><input type="checkbox" ${(shMeta.hide||[]).includes(f[0])?'':'checked'} onchange="shHideToggle('${f[0]}',this.checked)"><span>${f[1]}</span></label>`).join('');
     g('stPerLoad').checked=shMeta.perLoad;g('stClientsRow').style.display=shMeta.perLoad?'':'none';g('stClients').value=shMeta.clients;
     g('stRate').value=shMeta.rate;g('stShare').value=shMeta.share;g('stCap').value=shMeta.cap;
     const log=daylogLoad();
